@@ -1,0 +1,22 @@
+[package]
+name = "anoncreds-api"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "anoncreds_api"
+crate-type = ["cdylib"]
+
+[dependencies]
+blsful = "3.0.0-pre8"
+credx = "0.2.0"
+indexmap = "2"
+uuid = "1.16.0"
+maplit = "1"
+rand = "0.8"
+serde_json = "1"
+rand_core = "0.6"
+
+[dependencies.pyo3]
+version = "0.24.0"
+features = ["abi3-py38"]
