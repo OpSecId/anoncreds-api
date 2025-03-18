@@ -77,10 +77,10 @@ fn new_presentation_request(statements: String) -> String {
 }
 
 #[pyfunction]
-fn create_presentation(credential: String, presentation_schema: String, sig_id: String) -> String {
+fn create_presentation(credential: String, presentation_schema: String, sig_id: String, nonce: &[u8]) -> String {
 
-    let mut nonce = [0u8; 16];
-    thread_rng().fill_bytes(&mut nonce);
+    // let mut nonce = [0u8; 16];
+    // thread_rng().fill_bytes(&mut nonce);
 
     let sig_id: String = serde_json::from_str(&sig_id).unwrap();
 
@@ -95,13 +95,12 @@ fn create_presentation(credential: String, presentation_schema: String, sig_id: 
 }
 
 #[pyfunction]
-fn verify_presentation(schema: String, presentation: String, nonce: String) -> String {
+fn verify_presentation(schema: String, presentation: String, nonce: &[u8]) -> String {
     let schema: PresentationSchema<BbsScheme> = serde_json::from_str(&schema).unwrap();
     let presentation: Presentation<BbsScheme> = serde_json::from_str(&presentation).unwrap();
-    let nonce: &[u8] = serde_json::from_str(&nonce).unwrap();
     let verification = presentation.verify(&schema, &nonce).unwrap();
 
-    format!("{}", serde_json::to_string(&presentation).unwrap())
+    format!("{}", serde_json::to_string(&verification).unwrap())
 }
 
 #[pyfunction]
@@ -181,6 +180,7 @@ fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(domain_proof_generator, m)?)?;
     m.add_function(wrap_pyfunction!(create_nonce, m)?)?;
     m.add_function(wrap_pyfunction!(create_scalar, m)?)?;
+    m.add_function(wrap_pyfunction!(verify_presentation, m)?)?;
     m.add_function(wrap_pyfunction!(membership_registry, m)?)?;
     m.add_function(wrap_pyfunction!(create_commitment, m)?)?;
     m.add_function(wrap_pyfunction!(full_demo, m)?)?;

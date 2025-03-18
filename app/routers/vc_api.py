@@ -6,7 +6,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import JSONResponse
 
-from app.models.web_requests import CreateSchemaRequest, SetupIssuerRequest, IssueCredentialRequest
+from app.models.vc_api import IssueCredentialRequest, DeriveCredentialRequest
 from app.plugins import AskarStorage, AnonCredsV2
 from config import settings
 
@@ -37,8 +37,11 @@ async def credentials_issue(request_body: IssueCredentialRequest):
     
     issuer = AnonCredsV2(issuer=issuer)
     # cred_id = str(uuid.uuid4())
-    claims_data = issuer.map_claims(cred_def, subject, cred_id)
+    claims_data = issuer.map_claims(cred_def, credential.get('credentialSubject'), cred_id)
     signed_credential = issuer.issue_credential(claims_data)
+    vc = issuer.cred_to_w3c(cred_def, signed_credential)
     # signed_credential = {}
     
-    return JSONResponse(status_code=201, content=signed_credential)
+    return JSONResponse(status_code=201, content={
+        'verifiableCredential': vc
+    })

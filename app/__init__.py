@@ -1,7 +1,7 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
 
-from app.routers import issuer, holder, verifier, resources, utilities
+from app.routers import issuer, holder, verifier, resources, utilities, vc_api
 
 from config import settings
 
@@ -17,6 +17,7 @@ async def server_status():
 api_router.include_router(issuer.router)
 api_router.include_router(holder.router)
 api_router.include_router(verifier.router)
+api_router.include_router(vc_api.router)
 api_router.include_router(resources.router, prefix="/resources")
 api_router.include_router(utilities.router, prefix="/utilities")
 

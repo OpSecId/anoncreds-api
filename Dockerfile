@@ -14,8 +14,6 @@ RUN apt-get update
 RUN apt-get install -y python3 python3-pip python3.12-venv python3-poetry python3-maturin
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN cargo --help
-# RUN apt-get install -y cargo 
 
 WORKDIR /fastapi
 
@@ -28,7 +26,6 @@ COPY src ./src
 COPY README.md Cargo.toml pyproject.toml config.py main.py ./
 
 RUN poetry install
-# RUN cargo --version
 RUN maturin dev
 
 CMD [ "python", "main.py" ]

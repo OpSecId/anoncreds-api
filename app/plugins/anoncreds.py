@@ -270,9 +270,21 @@ class AnonCredsV2:
     def cred_to_w3c(self, issuer, credential_input):
         schema = issuer.get('schema')
         verifying_key = public_key_multibase(issuer.get('verifying_key').get('w'), 'bls')
+        schema_endpoint = 'https://' + settings.DOMAIN + '/' + issuer.get('id')
         credential = {
+            '@context': [
+                'https://www.w3.org/ns/credentials/v2',
+                'https://www.w3.org/ns/credentials/examples/v2'
+            ],
+            'type': ['VerifiableCredential', schema.get('label').replace(' ', '')],
+            'name': schema.get('label'),
+            'description': schema.get('description'),
             'issuer': {
                 'id': f'did:key:{verifying_key}'    
+            },
+            'credentialSchema': {
+                'type': 'AnonCredsDefinition',
+                'id': schema_endpoint
             },
             'credentialStatus': {
                 'revocationId': credential_input.get('claims')[0]['Revocation']['value'],
@@ -282,6 +294,9 @@ class AnonCredsV2:
             },
             'credentialSubject': {},
             'proof': {
+                'type': 'DataIntegrityProof',
+                'cryptosuite': 'anoncreds-bbs-2025',
+                'proofPurpose': 'assertionMethod',
                 'proofValue': multibase_encode(credential_input.get('signature')),
                 'verificationMethod': f'did:key:{verifying_key}#{verifying_key}'
             }
@@ -322,17 +337,20 @@ class AnonCredsV2:
         #     'credential': credential
         # }
         presentation = anoncreds_api.create_presentation(
-            json.dumps(credential), json.dumps(pres_req), json.dumps(sig_id)#, nonce.encode()
+            json.dumps(credential), json.dumps(pres_req), json.dumps(sig_id), nonce.encode()
         )
         presentation = self._sanitize_input(presentation)
         return presentation
     
     def verify_presentation(self, pres_schema, presentation, nonce):
-        verification = anoncreds_api.verify_presentation(
-            json.dumps(pres_schema), json.dumps(presentation), json.dumps(nonce)
-        )
-        verification = self._sanitize_input(verification)
-        return verification
+        try:
+            verification = anoncreds_api.verify_presentation(
+                json.dumps(pres_schema), json.dumps(presentation), nonce.encode()
+            )
+            verification = self._sanitize_input(verification)
+            return True
+        except:
+            return False
     
     def decrypt_proof(self, proof, key):
         decrypted_proof = anoncreds_api.decrypt_proof(

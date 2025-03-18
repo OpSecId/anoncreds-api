@@ -1,6 +1,7 @@
 # Local storage
 app.db
 target/
+demo/session/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

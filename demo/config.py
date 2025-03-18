@@ -9,14 +9,17 @@ Path("session").mkdir(parents=True, exist_ok=True)
 
 class Config(object):
     
-    APP_TITLE = 'AnonCreds + WebVH'
+    APP_TITLE = 'AnonCreds V2 Demo'
+    
+    ENV = 'development'
+    SECRET_KEY = os.getenv('SECRET_KEY', 'unsecured')
     
     DOMAIN = os.getenv('DOMAIN', 'localhost:5000')
     ENDPOINT = f"http://{DOMAIN}" if DOMAIN == 'localhost:5000' else f"https://{DOMAIN}"
     
     
     ASKAR_DB = os.getenv('ASKAR_DB', 'sqlite://session/app.db')
-    ANONCREDS_API = ''
+    ANONCREDS_API = 'https://api.anoncreds.vc'
     
     
     SESSION_TYPE = 'cachelib'
@@ -26,21 +29,4 @@ class Config(object):
     SESSION_COOKIE_SAMESITE = 'Strict'
     SESSION_COOKIE_HTTPONLY = 'True'
     
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    
-    DEMO = {
-        'name': 'Meeting Invitation',
-        'version': '1.1',
-        'issuer': 'WebVH AnonCreds Demo',
-        'size': 100,
-        'preview': {
-            'group': 'OWL',
-            'email': 'jane.doe@example.com',
-            'date': '20250213'
-        },
-        'request': {
-            'attributes': ['group', 'email'],
-            'predicate': ['date', '>=', 20250101],
-        }
-    }
     

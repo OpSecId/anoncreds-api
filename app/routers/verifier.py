@@ -47,8 +47,9 @@ async def verify_presentation(request_body: VerifyPresentationRequest):
     askar = AskarStorage()
     pres_schema = await askar.fetch('resource', options.get('presReqId'))
     anoncreds = AnonCredsV2()
-    verification = anoncreds.verify_presentation()
+    challenge = options.get('challenge')
+    verification = anoncreds.verify_presentation(pres_schema, presentation, challenge)
     
-    return JSONResponse(status_code=201, content={
+    return JSONResponse(status_code=200, content={
         'verification': verification,
     })

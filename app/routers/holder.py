@@ -53,10 +53,10 @@ async def create_presentation(request_body: CreatePresentationRequest):
     request_body = request_body.model_dump()
     credential = request_body.get('credential')
     options = request_body.get('options')
+    challenge = options.get('challenge')
     
     askar = AskarStorage()
     pres_req = await askar.fetch('resource', options.get('presReqId'))
-    challenge = options.get('presReqId') or str(uuid.uuid4())
     
     anoncreds = AnonCredsV2()
     presentation = anoncreds.create_presentation(pres_req, credential, challenge)

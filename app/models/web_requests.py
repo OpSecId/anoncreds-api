@@ -95,7 +95,7 @@ class DecryptProofRequest(BaseModel):
 
 class VerifyPresentationOption(BaseModel):
     """VerifyPresentationOption model."""
-    nonce: str = Field()
+    challenge: str = Field()
     presReqId: str = Field()
     
 

@@ -5,6 +5,16 @@
         "3504 3993 0144 0849",
         "3529 4604 2858 2839"
     ],
+    "commitments": [
+        "a402bd44f389b2367c95592d6d07be6a8f3a9790ec71bd0931190e3235e528df13563c64a8b6c25c67508ba78d98aba9",
+        "ac177830f096730f518b5302e343141f3f0970d2ddf94b8492ac701e18be0da21fc4289b8e6a818d918af3444ed18720",
+        "a8fd017715fe76bfad373ef4d6f19e9d64dafcaec90b814e57200236526137afd9735c2471f23a533bdaa80b017cb8ff",
+        "b067ab00e32ba22abfcac6a3a0273f9e962a8b21b71bd38b27f35cf6d5c6f4453be0ba1ca130f74706bd4d37e119a703"
+    ],
+    "issuer": {
+        "name": "Bank of Utopia",
+        "domain": "utopia.bank.example"
+    },
     "schema": {
         "title": "Credit Card Credential",
         "description": "A sample credit card credential",
@@ -21,6 +31,9 @@
             "expires": {
                 "type": "string"
             },
+            "expiryDateInt": {
+                "type": "number"
+            },
             "holder": {
                 "type": "string"
             }
@@ -32,6 +45,7 @@
             "number": "4096 2393 7734 7761",
             "cvv": "962",
             "expires": "02/26",
+            "expiryDateInt": 20260201,
             "holder": "Jane Doe"
         }
     },
