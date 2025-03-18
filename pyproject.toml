@@ -1,6 +1,27 @@
+[tool.poetry]
+name = "anoncreds-api"
+version = "0.1.0"
+description = ""
+authors = ["PatStLouis <patrick.st-louis@opsecid.ca>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+maturin = {extras = ["patchelf"], version = "^1.8.3"}
+uvicorn = "^0.34.0"
+fastapi = "^0.115.11"
+aries-askar = "^0.4.3"
+python-dotenv = "^1.0.1"
+pydantic-settings = "^2.8.1"
+multiformats = "^0.3.1.post4"
+jcs = "^0.2.1"
+bitstring = "^4.3.0"
+
+
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
-build-backend = "maturin"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

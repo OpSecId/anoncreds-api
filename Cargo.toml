@@ -1,7 +1,7 @@
 [package]
 name = "anoncreds-api"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [lib]
 name = "anoncreds_api"
@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 blsful = "3.0.0-pre8"
-credx = "0.2.0"
+credx = "0.2.1"
 indexmap = "2"
 uuid = "1.16.0"
 maplit = "1"

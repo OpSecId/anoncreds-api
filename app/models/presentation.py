@@ -15,10 +15,11 @@ class Commitment(BaseModel):
     blinderGenerator: str = Field()
 
 class Revocation(BaseModel):
-    accumulator: str = Field()
+    accumulator: str = Field(None)
 
 class VerifiableEncryption(BaseModel):
     claim: str = Field(example='revocationId')
+    domain: str = Field(example='example.com')
     encryptionKey: str = Field(None, example=settings.TEST_VALUES.get('encryption_key'))
 
 

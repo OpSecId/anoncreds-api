@@ -5,6 +5,8 @@ from app.models.claims import ClaimSchema#, LengthValidator, RangeValidator
 from app.models.schema import CredentialSchema
 from app.utils import digest_multibase, multibase_encode, public_key_multibase
 from config import settings
+from bitstring import Array
+from array import array
 
 
 CLAIM_TYPES_MAPPING = {
@@ -34,10 +36,40 @@ class AnonCredsV2:
     def provision(self):
         pass
 
+    def full_test(self):
+        value_1, value_2, value_3, value_4  = anoncreds_api.full_demo()
+        return (
+            self._sanitize_input(value_1), 
+            self._sanitize_input(value_2), 
+            self._sanitize_input(value_3),
+            self._sanitize_input(value_4)
+        )
+
+    def decode_nonce(self, nonce):
+        return list(array('B', bytes.fromhex(nonce)))
+
+    def encode_nonce(self, nonce):
+        return Array('uint8', nonce).data.hex
+
+    def create_nonce(self):
+        nonce = anoncreds_api.create_nonce()
+        nonce = self._sanitize_input(nonce)
+        return self.encode_nonce(nonce)
+
+    def create_scalar(self):
+        scalar = anoncreds_api.create_scalar()
+        scalar = self._sanitize_input(scalar)
+        return scalar
+    
     def create_keypair(self):
         encryption_key, decryption_key = anoncreds_api.new_keys()
         encryption_key, decryption_key = self._sanitize_input(encryption_key), self._sanitize_input(decryption_key)
         return encryption_key, decryption_key
+    
+    def membership_registry(self):
+        signing_key, verification_key, registry = anoncreds_api.membership_registry()
+        signing_key, verification_key, registry = self._sanitize_input(signing_key), self._sanitize_input(verification_key), self._sanitize_input(registry)
+        return signing_key, verification_key, registry 
 
     def message_generator(self, domain=None):
         if domain:
@@ -90,9 +122,15 @@ class AnonCredsV2:
         })
         
         if statements_input.get('revocation'):
+            # TODO, get latest published accumulator
+            accumulator = (
+                statements_input['revocation'].get('accumulator') 
+                if statements_input['revocation'].get('accumulator') 
+                else cred_def.get('revocation_registry')
+            )
             statement = {
                 'reference_id': sig_id,
-                'accumulator': statements_input['revocation'].get('accumulator'),
+                'accumulator': accumulator,
                 'verification_key': cred_def['revocation_verifying_key'],
                 'claim': 0
             }
@@ -101,18 +139,11 @@ class AnonCredsV2:
             })
             
         if statements_input.get('encryption'):
-            message_generator = (
-                self._sanitize_input(anoncreds_api.domain_proof_generator(options.get('domain').encode('utf-8'))) 
-                if options.get('domain') else self._sanitize_input(anoncreds_api.msg_generator())
-            )
-            encryption_key = (
-                statements_input['encryption'].get('key') 
-                if statements_input['encryption'].get('key') else cred_def.get('verifiable_encryption_key')
-            )
+            message_generator = self._sanitize_input(anoncreds_api.domain_proof_generator(statements_input['encryption'].get('domain').encode('utf-8')))
             statement = {
                 'reference_id': sig_id,
                 'message_generator': message_generator,
-                'encryption_key': encryption_key,
+                'encryption_key': statements_input['encryption'].get('encryptionKey'),
                 'claim': indices.index(statements_input['encryption'].get('claim'))
             }
             statements.append({
@@ -126,14 +157,13 @@ class AnonCredsV2:
         blind_claims = []
         claim_indices = []
         
-        if options.get('revocation'):
-            claim_indices.append('revocationId')
-            claims.append(
-                ClaimSchema(
-                    claim_type='Revocation',
-                    label='revocationId'
-                )
+        claim_indices.append('revocationId')
+        claims.append(
+            ClaimSchema(
+                claim_type='Revocation',
+                label='revocationId'
             )
+        )
             
         if options.get('linkSecret'):
             claim_indices.append('linkSecret')
@@ -152,13 +182,40 @@ class AnonCredsV2:
             
             validators = []
             if properties[property].get('minimum') or properties[property].get('maximum'):
-                pass
+                validator = {
+                    'Range': {
+                        'min': properties[property].get('minimum'),
+                        'max': properties[property].get('maximum')
+                    }
+                }
+                validators.append(validator)
             if properties[property].get('minLength') or properties[property].get('maxLength'):
-                pass
+                validator = {
+                    'Length': {
+                        'min': properties[property].get('minLength'),
+                        'max': properties[property].get('maxLength')
+                    }
+                }
+                validators.append(validator)
             if properties[property].get('pattern'):
-                pass
+                validator = {
+                    'Regex': properties[property].get('pattern')
+                }
+                validators.append(validator)
             if properties[property].get('enum'):
-                pass
+                values = properties[property].get('enum')
+                for idx, value in enumerate(values):
+                    value_type = 'string' if isinstance(value, str) else 'number'
+                    values[idx] = {
+                        CLAIM_TYPES_MAPPING[value_type]: {
+                            'value': value,
+                            'print_friendly': True
+                        }
+                    }
+                validator = {
+                    'AnyOne': values
+                }
+                validators.append(validator)
             
             claims.append(
                 ClaimSchema(
@@ -269,3 +326,23 @@ class AnonCredsV2:
         )
         presentation = self._sanitize_input(presentation)
         return presentation
+    
+    def verify_presentation(self, pres_schema, presentation, nonce):
+        verification = anoncreds_api.verify_presentation(
+            json.dumps(pres_schema), json.dumps(presentation), json.dumps(nonce)
+        )
+        verification = self._sanitize_input(verification)
+        return verification
+    
+    def decrypt_proof(self, proof, key):
+        decrypted_proof = anoncreds_api.decrypt_proof(
+            json.dumps(proof), json.dumps(key)
+        )
+        decrypted_proof = self._sanitize_input(decrypted_proof)
+        return decrypted_proof
+    
+    def create_commitment(self, value, domain):
+        commitment = anoncreds_api.create_commitment(
+            json.dumps(value), json.dumps(domain).encode()
+        )
+        return self._sanitize_input(commitment)

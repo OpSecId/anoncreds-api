@@ -6,14 +6,14 @@ import uuid
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import JSONResponse
 
-from app.models.web_requests import CreatePresReqRequest, DecryptProofRequest
+from app.models.web_requests import CreatePresReqRequest, VerifyPresentationRequest
 from app.plugins import AskarStorage, AnonCredsV2
 from config import settings
 
 router = APIRouter(tags=["Verifier"])
 
 
-@router.post("/schema")
+@router.post("/request-presentation")
 async def create_pres_schema(request_body: CreatePresReqRequest):
     """"""
     request_body = request_body.model_dump()
@@ -38,6 +38,17 @@ async def create_pres_schema(request_body: CreatePresReqRequest):
     })
 
 
-@router.post("/decrypt")
-async def decrypt_proof(request_body: DecryptProofRequest):
-    pass
+@router.post("/verify-presentation")
+async def verify_presentation(request_body: VerifyPresentationRequest):
+    request_body = request_body.model_dump()
+    
+    presentation = request_body.get('presentation')
+    options = request_body.get('options')
+    askar = AskarStorage()
+    pres_schema = await askar.fetch('resource', options.get('presReqId'))
+    anoncreds = AnonCredsV2()
+    verification = anoncreds.verify_presentation()
+    
+    return JSONResponse(status_code=201, content={
+        'verification': verification,
+    })

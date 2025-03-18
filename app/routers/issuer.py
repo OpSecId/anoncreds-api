@@ -13,7 +13,7 @@ from config import settings
 router = APIRouter(tags=["Issuer"])
 
 
-@router.post("/schema")
+@router.post("/create-schema")
 async def create_cred_schema(request_body: CreateSchemaRequest):
     """"""
     request_body = request_body.model_dump()
@@ -40,7 +40,7 @@ async def create_cred_schema(request_body: CreateSchemaRequest):
     })
 
 
-@router.post("/setup")
+@router.post("/define-credential")
 async def setup_issuer(request_body: SetupIssuerRequest):
     """"""
     request_body = request_body.model_dump()
@@ -70,7 +70,7 @@ async def setup_issuer(request_body: SetupIssuerRequest):
     })
 
 
-@router.post("/issue")
+@router.post("/issue-credential")
 async def issue_credential(request_body: IssueCredentialRequest):
     """"""
     request_body = request_body.model_dump()

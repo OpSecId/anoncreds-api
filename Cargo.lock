@@ -316,9 +316,9 @@ dependencies = [
 
 [[package]]
 name = "credx"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82e07b809bc147f56a2b41d1f378f7e756ef187b54ab379e750b14a8b0f07ad2"
+checksum = "7de076d78dd752a0693cab0b4107916a304fd39c3cbe542d3e79201e0048bad6"
 dependencies = [
  "aes-gcm",
  "base64",

@@ -18,7 +18,6 @@ class BaseModel(BaseModel):
     
 
 class CreateSchemaOptions(BaseModel):
-    revocation: bool = Field(False)
     linkSecret: bool = Field(False)
     
 
@@ -65,8 +64,14 @@ class CreatePresReqRequest(BaseModel):
 
     # statements: List[VerifiableEncryption] = Field()
     statements: Dict[str, Union[Revocation, VerifiableEncryption]] = Field(example={
-        'revocation': Revocation(accumulator=settings.TEST_VALUES.get('accumulator')),
-        'encryption': VerifiableEncryption(claim='revocationId', encryptionKey=settings.TEST_VALUES.get('encryption_key')),
+        'revocation': {
+            "accumulator": ""
+        },
+        'encryption': VerifiableEncryption(
+            claim='revocationId', 
+            domain='example.com', 
+            encryptionKey=settings.TEST_VALUES.get('encryption_key')
+        ),
     })
     options: CreatePresReqOptions = Field()
     
@@ -88,6 +93,18 @@ class DecryptProofRequest(BaseModel):
     options: DecryptProofOption = Field()
     
 
+class VerifyPresentationOption(BaseModel):
+    """VerifyPresentationOption model."""
+    nonce: str = Field()
+    presReqId: str = Field()
+    
+
+class VerifyPresentationRequest(BaseModel):
+    """VerifyPresentationRequest model."""
+    presentation: dict = Field()
+    options: VerifyPresentationOption = Field()
+    
+
 class CreatePresentationOption(BaseModel):
     """CreatePresentationOption model."""
     challenge: str = Field(None)
@@ -98,3 +115,21 @@ class CreatePresentationRequest(BaseModel):
     """CreatePresentationRequest model."""
     credential: dict = Field()
     options: CreatePresentationOption = Field()
+    
+
+class CredentialsIssueOptions(BaseModel):
+    """CredentialsIssueRequest model."""
+    credDefId: str = Field()
+    credentialId: str = Field()
+    
+
+class CredentialsIssueRequest(BaseModel):
+    """CreatePresentationRequest model."""
+    credential: dict = Field()
+    options: CredentialsIssueOptions = Field()
+    
+
+class CreateCommitmentRequest(BaseModel):
+    """CreateCommitmentRequest model."""
+    value: str = Field()
+    domain: str = Field()

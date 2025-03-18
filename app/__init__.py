@@ -14,9 +14,9 @@ async def server_status():
     """Server status endpoint."""
     return JSONResponse(status_code=200, content={"status": "ok"})
 
-api_router.include_router(issuer.router, prefix="/issuer")
-api_router.include_router(holder.router, prefix="/holder")
-api_router.include_router(verifier.router, prefix="/verifier")
+api_router.include_router(issuer.router)
+api_router.include_router(holder.router)
+api_router.include_router(verifier.router)
 api_router.include_router(resources.router, prefix="/resources")
 api_router.include_router(utilities.router, prefix="/utilities")
 

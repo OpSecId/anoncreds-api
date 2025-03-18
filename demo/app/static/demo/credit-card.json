@@ -1,0 +1,47 @@
+{
+    "registry": [
+        "4086 8176 1180 4614",
+        "4096 2393 7734 7761",
+        "3504 3993 0144 0849",
+        "3529 4604 2858 2839"
+    ],
+    "schema": {
+        "title": "Credit Card Credential",
+        "description": "A sample credit card credential",
+        "properties": {
+            "cardType": {
+                "type": "string"
+            },
+            "number": {
+                "type": "string"
+            },
+            "cvv": {
+                "type": "string"
+            },
+            "expires": {
+                "type": "string"
+            },
+            "holder": {
+                "type": "string"
+            }
+        }
+    },
+    "issuance": {
+        "credentialSubject": {
+            "cardType": "Visa",
+            "number": "4096 2393 7734 7761",
+            "cvv": "962",
+            "expires": "02/26",
+            "holder": "Jane Doe"
+        }
+    },
+    "presentation": {
+        "statements": {
+            "encryption": {
+                "claim": "number",
+                "domain": "visa.domain",
+                "encryptionKey": ""
+            }
+        }
+    }
+}

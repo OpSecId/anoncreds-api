@@ -5,11 +5,24 @@ import json
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import JSONResponse
 
-from app.models.web_requests import MessageGeneratorRequest
+from app.models.web_requests import MessageGeneratorRequest, DecryptProofRequest, CreateCommitmentRequest
 from app.plugins import AskarStorage, AnonCredsV2
 from config import settings
 
 router = APIRouter(tags=["Utilities"])
+
+
+@router.post("/full-test")
+async def full_test():
+    anoncreds = AnonCredsV2()
+    value_1, value_2, value_3, value_4 = anoncreds.full_test()
+    
+    return JSONResponse(status_code=200, content={
+        'value_1': value_1,
+        'value_2': value_2,
+        'value_3': value_3,
+        'value_4': value_4,
+    })
 
 
 @router.post("/keys")
@@ -22,6 +35,38 @@ async def create_keypair():
         'decryption_key': decryption_key,
     })
 
+
+@router.post("/membership")
+async def membership_registry():
+    anoncreds = AnonCredsV2()
+    signing_key, verification_key, registry = anoncreds.membership_registry()
+    
+    return JSONResponse(status_code=200, content={
+        'signing_key': signing_key,
+        'verification_key': verification_key,
+        'registry': registry,
+    })
+
+
+@router.post("/scalar")
+async def create_scalar():
+    anoncreds = AnonCredsV2()
+    scalar = anoncreds.create_scalar()
+    
+    return JSONResponse(status_code=200, content={
+        'scalar': scalar,
+    })
+
+
+@router.post("/nonce")
+async def create_nonce():
+    anoncreds = AnonCredsV2()
+    nonce = anoncreds.create_nonce()
+    
+    return JSONResponse(status_code=200, content={
+        'nonce': nonce,
+    })
+
 @router.post("/generator")
 async def create_message_generator(request_body: MessageGeneratorRequest):
     request_body = request_body.model_dump()
@@ -31,4 +76,31 @@ async def create_message_generator(request_body: MessageGeneratorRequest):
     return JSONResponse(status_code=200, content={
         'generator': generator,
         'domain': request_body.get('domain')
+    })
+
+
+@router.post("/decrypt-proof")
+async def decrypt_proof(request_body: DecryptProofRequest):
+    request_body = request_body.model_dump()
+    
+    proof = request_body.get('proof')
+    options = request_body.get('options')
+    
+    anoncreds = AnonCredsV2()
+    decrypted_proof = anoncreds.decrypt_proof(proof, options.get('decryptionKey'))
+    
+    return JSONResponse(status_code=201, content={
+        'decrypted': decrypted_proof,
+    })
+
+
+@router.post("/create-commitment")
+async def create_commitment(request_body: CreateCommitmentRequest):
+    request_body = request_body.model_dump()
+    
+    anoncreds = AnonCredsV2()
+    commitment = anoncreds.create_commitment(request_body.get('value'), request_body.get('domain'))
+    
+    return JSONResponse(status_code=201, content={
+        'commitment': commitment,
     })
