@@ -13,7 +13,7 @@ from config import settings
 router = APIRouter(tags=["Holder"])
 
 
-@router.post("/request-credential")
+@router.post("/create-cred-request")
 async def request_credential(request_body: BlindCredentialRequest):
     """"""
     request_body = request_body.model_dump()

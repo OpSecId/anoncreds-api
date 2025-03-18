@@ -12,7 +12,7 @@ from config import settings
 router = APIRouter(tags=["Utilities"])
 
 
-@router.post("/full-test")
+@router.post("/test")
 async def full_test():
     anoncreds = AnonCredsV2()
     value_1, value_2, value_3, value_4 = anoncreds.full_test()
@@ -58,8 +58,8 @@ async def create_scalar():
     })
 
 
-@router.post("/nonce")
-async def create_nonce():
+@router.post("/challenge")
+async def create_challenge():
     anoncreds = AnonCredsV2()
     nonce = anoncreds.create_nonce()
     
@@ -79,7 +79,7 @@ async def create_message_generator(request_body: MessageGeneratorRequest):
     })
 
 
-@router.post("/decrypt-proof")
+@router.post("/decrypt")
 async def decrypt_proof(request_body: DecryptProofRequest):
     request_body = request_body.model_dump()
     
@@ -94,7 +94,7 @@ async def decrypt_proof(request_body: DecryptProofRequest):
     })
 
 
-@router.post("/create-commitment")
+@router.post("/commitment")
 async def create_commitment(request_body: CreateCommitmentRequest):
     request_body = request_body.model_dump()
     

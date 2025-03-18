@@ -13,7 +13,7 @@ from config import settings
 router = APIRouter(tags=["Verifier"])
 
 
-@router.post("/request-presentation")
+@router.post("/create-pres-schema")
 async def create_pres_schema(request_body: CreatePresReqRequest):
     """"""
     request_body = request_body.model_dump()
