@@ -1,0 +1,106 @@
+<div class="bg-body-tertiary p-6 rounded-4">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg">
+            <h3 class="h2">StrideHub</h3>
+            <p class="m-0 text-secondary">Presentation Receipt</p>
+        </div>
+        <div class="col-lg">
+            <ul class="list-unstyled m-0">
+                {% for proof_id in session['presentations']['shoes-checkout']['proofs'] %}
+                {% if session['presentations']['shoes-checkout']['proofs'][proof_id].get('Signature') %}
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Verified (Signature)
+                </li>
+                {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('VerifiableEncryption') %}
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Transaction Approved (Encryption)
+                </li>
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Account Found (Encryption)
+                </li>
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Trusted Holder (Equality)
+                </li>
+                {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('Revocation') %}
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Valid (Revocation)
+                </li>
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon text-red icon-2">
+                        <path d="M18 6l-12 12"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                    Anniversary Promo (Membership)
+                </li>
+                <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon text-red icon-2">
+                        <path d="M18 6l-12 12"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                    Legacy Rebates (Range)
+                </li>
+                {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('Equality') %}
+                {# <li>
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-inline me-1 text-green icon-3">
+                        <path d="M5 12l5 5l10 -10"></path>
+                    </svg>
+                    Equality Verified
+                </li> #}
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {# <div class="col-6-sm col-lg">
+            <div class="pricing-price m-0">
+                <span class="pricing-price-currency">$</span>599
+                <div class="pricing-price-description">
+                    <div>per team</div>
+                    <div>per year</div>
+                </div>
+            </div>
+        </div> #}
+        {# <div class="col-6-sm col-lg-auto"><a href="#" class="btn btn-primary w-100">Get started</a></div> #}
+    </div>
+</div>
+{# <div>
+    <pre><code>{{ session['presentations']['shoes-checkout']['proofs'][proof_id].get('Signature') | tojson(2) }}</code></pre>
+</div> #}

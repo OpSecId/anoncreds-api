@@ -14,7 +14,9 @@ class AskarStorage:
     def __init__(self):
         """Initialize the Askar storage plugin."""
         self.db = Config.ASKAR_DB
-        self.key = Store.generate_raw_key(hashlib.md5(Config.SECRET_KEY.encode()).hexdigest())
+        self.key = Store.generate_raw_key(
+            hashlib.md5(Config.SECRET_KEY.encode()).hexdigest()
+        )
 
     async def provision(self, recreate=False):
         """Provision the Askar storage."""

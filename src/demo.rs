@@ -1,124 +1,130 @@
 use pyo3::prelude::*;
+use pyo3::PyResult;
+use blsful::inner_types::*;
+use blsful::*;
+use std::collections::BTreeMap;
 use rand::{thread_rng, RngCore};
-use indexmap::indexmap;
-use maplit::btreeset;
-// use ::credx::blind::BlindCredentialRequest;
-use ::credx::claim::{ClaimType, HashedClaim, RevocationClaim};
+use indexmap::{indexmap, IndexMap};
+// use maplit::{btreemap, btreeset};
+use ::credx::blind::BlindCredentialRequest;
+use ::credx::claim::{Claim, ClaimData, ClaimType, ScalarClaim, NumberClaim, HashedClaim, RevocationClaim};
+// use ::credx::claim::{ClaimType, ClaimValidator, HashedClaim, RevocationClaim, NumberClaim, ScalarClaim};
 use ::credx::{
     create_domain_proof_generator, generate_verifiable_encryption_keys, random_string
 };
-use ::credx::prelude::PresentationProofs;
-use ::credx::credential::{CredentialSchema, ClaimSchema};
-use ::credx::presentation::{Presentation, PresentationSchema};
-use ::credx::statement::{VerifiableEncryptionStatement, RevocationStatement, SignatureStatement};
+use ::credx::prelude::{PresentationCredential, MembershipRegistry, MembershipSigningKey, MembershipVerificationKey};
+use ::credx::credential::{Credential, CredentialSchema, ClaimSchema};
+use ::credx::presentation::{Presentation, PresentationSchema, PresentationProofs, VerifiableEncryptionProof};
+use ::credx::statement::{Statements, VerifiableEncryptionStatement, RevocationStatement, SignatureStatement};
 use ::credx::knox::bbs::BbsScheme;
-use ::credx::issuer::Issuer;
+use ::credx::issuer::{IssuerPublic, Issuer};
+
+use maplit::{btreemap, btreeset};
 
 #[pyfunction]
-pub fn full_demo() -> (String, String, String, String) {
-    const LABEL: &str = "Test Schema";
-    const DESCRIPTION: &str = "This is a test presentation schema";
-    const CRED_ID: &str = "91742856-6eda-45fb-a709-d22ebb5ec8a5";
+// fn check_domain_commitment(value: String, domain: &[u8], proof: String, decryption_key: String) -> String {
+pub fn check_domain_commitment() -> String {
+
+    let CRED_NAME: &str = "Credential";
+    let CRED_DESC: &str = "A credential";
+    let CRED_ID: &str = "1dfc0443-d71f-4a72-8c9e-97a6e280ded2";
+    let DOMAIN: &[u8] = b"example.com";
+    let SUBJECT_NAME: &str = "Jane Doe";
+
+    // Setup the credential schema and issuer
     let schema_claims = [
         ClaimSchema {
             claim_type: ClaimType::Revocation,
-            label: "revocationId".to_string(),
+            label: "credentialId".to_string(),
             print_friendly: false,
             validators: vec![],
         },
+        // ClaimSchema {
+        //     claim_type: ClaimType::Scalar,
+        //     label: "linkSecret".to_string(),
+        //     print_friendly: false,
+        //     validators: vec![],
+        // },
         ClaimSchema {
             claim_type: ClaimType::Hashed,
             label: "name".to_string(),
             print_friendly: true,
             validators: vec![],
         },
+        ClaimSchema {
+            claim_type: ClaimType::Number,
+            label: "age".to_string(),
+            print_friendly: true,
+            validators: vec![],
+        },
     ];
     let cred_schema =
-        CredentialSchema::new(Some(LABEL), Some(DESCRIPTION), &[], &schema_claims).unwrap();
-    // println!("{}", serde_json::to_string(&cred_schema).unwrap());
-
+        CredentialSchema::new(Some(CRED_NAME), Some(CRED_DESC), &[], &schema_claims).unwrap();
     let (issuer_public, mut issuer) = Issuer::<BbsScheme>::new(&cred_schema);
-    // println!("{}", serde_json::to_string(&issuer_public).unwrap());
-    // println!("{}", serde_json::to_string(&issuer).unwrap());
 
-    let credential = issuer
-        .sign_credential(&[
-            RevocationClaim::from(CRED_ID).into(),
-            HashedClaim::from("John Doe").into(),
-        ])
-        .unwrap();
-    // println!("{}", serde_json::to_string(&credential).unwrap());
-
-    let (verifier_domain_specific_encryption_key, verifier_domain_specific_decryption_key) =
-        generate_verifiable_encryption_keys(thread_rng());
-
-    let sig_id = random_string(16, rand::thread_rng());
+    // Setup the presentation schema and verifier
+    let (encryption_key, decryption_key) = generate_verifiable_encryption_keys(thread_rng());
     let sig_st = SignatureStatement {
-        disclosed: btreeset! {"name".to_string()},
-        id: sig_id.clone(),
+        disclosed: btreeset! {},
+        id: random_string(16, rand::thread_rng()),
         issuer: issuer_public.clone(),
     };
-    let acc_st = RevocationStatement {
-        id: random_string(16, rand::thread_rng()),
-        reference_id: sig_st.id.clone(),
-        accumulator: issuer_public.revocation_registry,
-        verification_key: issuer_public.revocation_verifying_key,
-        claim: 0,
-    };
+    let sig_id =  sig_st.id.clone();
+
     let verenc_st = VerifiableEncryptionStatement {
-        message_generator: create_domain_proof_generator(b"verifier specific message generator"),
-        encryption_key: verifier_domain_specific_encryption_key,
+        message_generator: create_domain_proof_generator(DOMAIN),
+        encryption_key: encryption_key,
         id: random_string(16, rand::thread_rng()),
         reference_id: sig_st.id.clone(),
-        claim: 0,
+        claim: 1,
     };
     let verenc_st_id = verenc_st.id.clone();
 
     let mut nonce = [0u8; 16];
     thread_rng().fill_bytes(&mut nonce);
-
-    println!("{}", serde_json::to_string(&credential).unwrap());
-    let credentials = indexmap! { sig_id => credential.credential.into() };
-    println!("{:?}", credentials);
     let presentation_schema = PresentationSchema::new(&[
         sig_st.into(),
-        acc_st.into(),
         verenc_st.into(),
     ]);
 
-    println!("{}", serde_json::to_string(&presentation_schema).unwrap());
-
+    // Issue credential and create presentation
+    // let blind_claims: BTreeMap<String, ClaimData> = btreemap! { "linkSecret".to_string() => ScalarClaim::from(Scalar::random(rand_core::OsRng)).into() };
+    // let (request, blinder): (BlindCredentialRequest<BbsScheme>, Scalar) = BlindCredentialRequest::new(&issuer_public, &blind_claims).unwrap();
+    // let blind_bundle = issuer.blind_sign_credential(
+    //     &request,
+    //     &btreemap! {
+    //         "credentialId".to_string() => RevocationClaim::from(CRED_ID).into(),
+    //         "name".to_string() => HashedClaim::from(SUBJECT_NAME).into(),
+    //         "age".to_string() => NumberClaim::from(24).into(),
+    //     },
+    // );
+    // println!("{}", serde_json::to_string(&blind_claims).unwrap());
+    let credential = issuer
+        .sign_credential(&[
+            RevocationClaim::from(CRED_ID).into(),
+            HashedClaim::from(SUBJECT_NAME).into(),
+            NumberClaim::from(24).into(),
+        ])
+        .unwrap();
+    let credentials = indexmap! { sig_id => credential.credential.into() };
     let presentation = Presentation::create(&credentials, &presentation_schema, &nonce).unwrap();
     presentation.verify(&presentation_schema, &nonce).unwrap();
-    let proof1 =
-        if let PresentationProofs::VerifiableEncryption(v) = &presentation.proofs[&verenc_st_id] {
-            v.clone()
-        } else {
-            panic!("Expected VerifiableEncryption proof");
-        };
 
-    thread_rng().fill_bytes(&mut nonce);
-    let presentation = Presentation::create(&credentials, &presentation_schema, &nonce).unwrap();
-    presentation.verify(&presentation_schema, &nonce).unwrap();
+    // Compare decrypted proof
+    let proof: VerifiableEncryptionProof = 
+    if let PresentationProofs::VerifiableEncryption(v) = &presentation.proofs[&verenc_st_id] {
+        *v.clone()
+    } else {
+        panic!("Expected VerifiableEncryption proof");
+    };
+    let decrypted_proof = proof.decrypt(&decryption_key);
 
-    let proof2 =
-        if let PresentationProofs::VerifiableEncryption(v) = &presentation.proofs[&verenc_st_id] {
-            v.clone()
-        } else {
-            panic!("Expected VerifiableEncryption proof");
-        };
+    let value_hash: HashedClaim = HashedClaim::from(SUBJECT_NAME);
+    let value_scalar: Scalar = value_hash.to_scalar();
+    let value_commitment: G1Projective = create_domain_proof_generator(DOMAIN) * value_scalar;
 
-    assert_ne!(proof1.blinder_proof, proof2.blinder_proof);
-    assert_ne!(proof1.c1, proof2.c1);
-    assert_ne!(proof1.c2, proof2.c2);
-    let value1 = proof1.decrypt(&verifier_domain_specific_decryption_key);
-    let value2 = proof2.decrypt(&verifier_domain_specific_decryption_key);
-    assert_eq!(value1, value2);
+    println!("{}", serde_json::to_string(&decrypted_proof).unwrap());
+    println!("{}", serde_json::to_string(&value_commitment).unwrap());
 
-    (
-        format!("{}", serde_json::to_string(&proof1).unwrap()),
-        format!("{}", serde_json::to_string(&proof2).unwrap()),
-        format!("{}", serde_json::to_string(&verifier_domain_specific_decryption_key).unwrap()),
-        format!("{}", serde_json::to_string(&value2).unwrap())
-    )
+    format!("{}", serde_json::to_string(&value_commitment).unwrap())
 }

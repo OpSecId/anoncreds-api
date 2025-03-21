@@ -148,6 +148,26 @@ redis = ["redis (>=5.0.3)"]
 sqlalchemy = ["flask-sqlalchemy (>=3.0.5)"]
 
 [[package]]
+name = "flask-wtf"
+version = "1.2.2"
+description = "Form rendering, validation, and CSRF protection for Flask with WTForms."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "flask_wtf-1.2.2-py3-none-any.whl", hash = "sha256:e93160c5c5b6b571cf99300b6e01b72f9a101027cab1579901f8b10c5daf0b70"},
+    {file = "flask_wtf-1.2.2.tar.gz", hash = "sha256:79d2ee1e436cf570bccb7d916533fa18757a2f18c290accffab1b9a0b684666b"},
+]
+
+[package.dependencies]
+flask = "*"
+itsdangerous = "*"
+wtforms = "*"
+
+[package.extras]
+email = ["email-validator"]
+
+[[package]]
 name = "itsdangerous"
 version = "2.2.0"
 description = "Safely pass data to untrusted environments and back."
@@ -302,6 +322,18 @@ toml = ["tomli ; python_version < \"3.11\"", "tomli_w"]
 yaml = ["pyyaml"]
 
 [[package]]
+name = "nanoid"
+version = "2.0.0"
+description = "A tiny, secure, URL-friendly, unique string ID generator for Python"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "nanoid-2.0.0-py3-none-any.whl", hash = "sha256:90aefa650e328cffb0893bbd4c236cfd44c48bc1f2d0b525ecc53c3187b653bb"},
+    {file = "nanoid-2.0.0.tar.gz", hash = "sha256:5a80cad5e9c6e9ae3a41fa2fb34ae189f7cb420b2a5d8f82bd9d23466e4efa68"},
+]
+
+[[package]]
 name = "pillow"
 version = "11.1.0"
 description = "Python Imaging Library (Fork)"
@@ -443,7 +475,25 @@ MarkupSafe = ">=2.1.1"
 [package.extras]
 watchdog = ["watchdog (>=2.3)"]
 
+[[package]]
+name = "wtforms"
+version = "3.2.1"
+description = "Form validation and rendering for Python web development."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "wtforms-3.2.1-py3-none-any.whl", hash = "sha256:583bad77ba1dd7286463f21e11aa3043ca4869d03575921d1a1698d0715e0fd4"},
+    {file = "wtforms-3.2.1.tar.gz", hash = "sha256:df3e6b70f3192e92623128123ec8dca3067df9cfadd43d59681e210cfb8d4682"},
+]
+
+[package.dependencies]
+markupsafe = "*"
+
+[package.extras]
+email = ["email-validator"]
+
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "c1aad6345fe403dc5c97857b0928d686ae2fca54706280b751cfdcc9989ac3e3"
+content-hash = "557de0482ad13964f2ab926ed53c6147592c502db04f16e1e43a1690044ea4eb"

@@ -11,8 +11,10 @@ class BaseModel(BaseModel):
         """Dump the model to a dictionary."""
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
 
+
 class Issuer(BaseModel):
     pass
+
 
 class IssuerPublic(BaseModel):
     pass

@@ -7,38 +7,47 @@ use rand::{thread_rng, RngCore};
 use indexmap::{indexmap, IndexMap};
 // use maplit::{btreemap, btreeset};
 use ::credx::blind::BlindCredentialRequest;
-use ::credx::claim::{Claim, ClaimData, HashedClaim};
+use ::credx::claim::{Claim, ClaimData, ClaimType, HashedClaim, RevocationClaim};
 // use ::credx::claim::{ClaimType, ClaimValidator, HashedClaim, RevocationClaim, NumberClaim, ScalarClaim};
 use ::credx::{
-    create_domain_proof_generator, generate_verifiable_encryption_keys
+    create_domain_proof_generator, generate_verifiable_encryption_keys, random_string
 };
 use ::credx::prelude::{PresentationCredential, MembershipRegistry, MembershipSigningKey, MembershipVerificationKey};
-use ::credx::credential::{Credential, CredentialSchema};
+use ::credx::credential::{Credential, CredentialSchema, ClaimSchema};
 use ::credx::presentation::{Presentation, PresentationSchema, PresentationProofs, VerifiableEncryptionProof};
-use ::credx::statement::Statements;
+use ::credx::statement::{Statements, VerifiableEncryptionStatement, RevocationStatement, SignatureStatement};
 use ::credx::knox::bbs::BbsScheme;
 use ::credx::issuer::{IssuerPublic, Issuer};
 mod demo;
-use demo::full_demo;
+use demo::check_domain_commitment;
+
+use maplit::btreeset;
 
 #[pyfunction]
-fn create_schema(schema: String) -> String {
-    let cred_schema: CredentialSchema = serde_json::from_str(&schema).unwrap();
+fn new_cred_schema(cred_schema: String) -> String {
+    let cred_schema: CredentialSchema = serde_json::from_str(&cred_schema).unwrap();
     format!("{}", serde_json::to_string(&cred_schema).unwrap())
 }
 
 #[pyfunction]
-fn setup_issuer(schema: String) -> (String, String) {
+fn new_pres_schema(statements: String) -> String {
+    let statements: Vec<Statements<BbsScheme>> = serde_json::from_str(&statements).unwrap();
+    let pres_schema: PresentationSchema<BbsScheme> = PresentationSchema::new(&statements);
+    format!("{}", serde_json::to_string(&pres_schema).unwrap())
+}
+
+#[pyfunction]
+fn new_issuer(schema: String) -> (String, String) {
     let cred_schema: CredentialSchema = serde_json::from_str(&schema).unwrap();
-    let (isspub, iss) = Issuer::<BbsScheme>::new(&cred_schema);
+    let (issuer_public, issuer_private) = Issuer::<BbsScheme>::new(&cred_schema);
     (
-        format!("{}", serde_json::to_string(&isspub).unwrap()),
-        format!("{}", serde_json::to_string(&iss).unwrap())
+        format!("{}", serde_json::to_string(&issuer_public).unwrap()),
+        format!("{}", serde_json::to_string(&issuer_private).unwrap())
     )
 }
 
 #[pyfunction]
-fn request_credential(issuer_public: String, blind_claims: String) -> (String, String) {
+fn new_cred_request(issuer_public: String, blind_claims: String) -> (String, String) {
     let issuer_public: IssuerPublic<BbsScheme> = serde_json::from_str(&issuer_public).unwrap();
     let blind_claims: BTreeMap<String, ClaimData> = serde_json::from_str(&blind_claims).unwrap();
     let (request, blinder): (BlindCredentialRequest<BbsScheme>, Scalar) = BlindCredentialRequest::new(&issuer_public, &blind_claims).unwrap();
@@ -49,56 +58,42 @@ fn request_credential(issuer_public: String, blind_claims: String) -> (String, S
 }
 
 #[pyfunction]
-fn sign_credential(issuer: String, claims_data: String) -> String {
-    let mut issuer: Issuer<BbsScheme> = serde_json::from_str(&issuer).unwrap();
+fn issue_credential(issuer_private: String, claims_data: String) -> String {
+    let mut issuer_private: Issuer<BbsScheme> = serde_json::from_str(&issuer_private).unwrap();
     let claims_data: Vec<ClaimData> = serde_json::from_str(&claims_data).unwrap();
-    let credential = issuer.sign_credential(&claims_data).unwrap();
+    let credential = issuer_private.sign_credential(&claims_data).unwrap();
     format!("{}", serde_json::to_string(&credential).unwrap())
 }
 
 #[pyfunction]
-fn sign_blind_credential(issuer: String, claims_data: String, request: String) -> String {
-    let mut issuer: Issuer<BbsScheme> = serde_json::from_str(&issuer).unwrap();
-    let request: BlindCredentialRequest<BbsScheme> = serde_json::from_str(&request).unwrap();
+fn issue_blind_credential(issuer_private: String, claims_data: String, cred_request: String) -> String {
+    let mut issuer_private: Issuer<BbsScheme> = serde_json::from_str(&issuer_private).unwrap();
+    let cred_request: BlindCredentialRequest<BbsScheme> = serde_json::from_str(&cred_request).unwrap();
     let claims_data: BTreeMap<String, ClaimData> = serde_json::from_str(&claims_data).unwrap();
-    // let blind_bundle = issuer.blind_sign_credential(
-    //     &request,
+    // let blind_bundle = issuer_private.blind_sign_credential(
+    //     &cred_request,
     //     &claims_data,
     // );
-    format!("{}", serde_json::to_string(&request).unwrap())
+    format!("{}", serde_json::to_string(&cred_request).unwrap())
 }
 
 #[pyfunction]
-fn new_presentation_request(statements: String) -> String {
-    let statements: Vec<Statements<BbsScheme>> = serde_json::from_str(&statements).unwrap();
-    let presentation_schema: PresentationSchema<BbsScheme> = PresentationSchema::new(&statements);
-
-    format!("{}", serde_json::to_string(&presentation_schema).unwrap())
-}
-
-#[pyfunction]
-fn create_presentation(credential: String, presentation_schema: String, sig_id: String, nonce: &[u8]) -> String {
-
-    // let mut nonce = [0u8; 16];
-    // thread_rng().fill_bytes(&mut nonce);
+fn create_presentation(credential: String, pres_schema: String, sig_id: String, nonce: &[u8]) -> String {
 
     let sig_id: String = serde_json::from_str(&sig_id).unwrap();
-
     let credential: Credential<BbsScheme> = serde_json::from_str(&credential).unwrap();
-    let presentation_schema: PresentationSchema<BbsScheme> = serde_json::from_str(&presentation_schema).unwrap();
-
+    let pres_schema: PresentationSchema<BbsScheme> = serde_json::from_str(&pres_schema).unwrap();
     let credentials: IndexMap<String, PresentationCredential<BbsScheme>> = indexmap! { sig_id => credential.into() };
-    // println!("{:?}", credentials);
-    let presentation = Presentation::create(&credentials, &presentation_schema, &nonce).unwrap();
+    let presentation = Presentation::create(&credentials, &pres_schema, &nonce).unwrap();
 
     format!("{}", serde_json::to_string(&presentation).unwrap())
 }
 
 #[pyfunction]
-fn verify_presentation(schema: String, presentation: String, nonce: &[u8]) -> String {
-    let schema: PresentationSchema<BbsScheme> = serde_json::from_str(&schema).unwrap();
+fn verify_presentation(pres_schema: String, presentation: String, nonce: &[u8]) -> String {
+    let pres_schema: PresentationSchema<BbsScheme> = serde_json::from_str(&pres_schema).unwrap();
     let presentation: Presentation<BbsScheme> = serde_json::from_str(&presentation).unwrap();
-    let verification = presentation.verify(&schema, &nonce).unwrap();
+    let verification = presentation.verify(&pres_schema, &nonce).unwrap();
 
     format!("{}", serde_json::to_string(&verification).unwrap())
 }
@@ -127,10 +122,9 @@ fn msg_generator() -> String {
 }
 
 #[pyfunction]
-fn create_nonce() -> String {
-    let mut nonce = [0u8; 16];
-    thread_rng().fill_bytes(&mut nonce);
-    format!("{}", serde_json::to_string(&nonce).unwrap())
+fn domain_proof_generator(domain: &[u8]) -> String {
+    let generator: G1Projective = create_domain_proof_generator(domain);
+    format!("{}", serde_json::to_string(&generator).unwrap())
 }
 
 #[pyfunction]
@@ -152,38 +146,37 @@ fn membership_registry() -> (String, String, String) {
 }
 
 #[pyfunction]
-fn domain_proof_generator(message: &[u8]) -> String {
-    let generator: G1Projective = create_domain_proof_generator(message);
-    format!("{}", serde_json::to_string(&generator).unwrap())
-}
-
-#[pyfunction]
 fn create_commitment(value: String, domain: &[u8]) -> String {
+
+    let value: &str = serde_json::from_str(&value).unwrap();
+
     let value_hash: HashedClaim = HashedClaim::from(value);
     let value_scalar: Scalar = value_hash.to_scalar();
     let value_commitment: G1Projective = create_domain_proof_generator(domain) * value_scalar;
+
     format!("{}", serde_json::to_string(&value_commitment).unwrap())
 }
 
 #[pymodule]
 fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(create_schema, m)?)?;
-    m.add_function(wrap_pyfunction!(setup_issuer, m)?)?;
-    m.add_function(wrap_pyfunction!(request_credential, m)?)?;
-    m.add_function(wrap_pyfunction!(sign_credential, m)?)?;
-    m.add_function(wrap_pyfunction!(sign_blind_credential, m)?)?;
-    m.add_function(wrap_pyfunction!(new_presentation_request, m)?)?;
+    m.add_function(wrap_pyfunction!(new_cred_schema, m)?)?;
+    m.add_function(wrap_pyfunction!(new_pres_schema, m)?)?;
+    m.add_function(wrap_pyfunction!(new_issuer, m)?)?;
+
+    m.add_function(wrap_pyfunction!(new_cred_request, m)?)?;
+    m.add_function(wrap_pyfunction!(issue_credential, m)?)?;
+    m.add_function(wrap_pyfunction!(issue_blind_credential, m)?)?;
     m.add_function(wrap_pyfunction!(create_presentation, m)?)?;
+    m.add_function(wrap_pyfunction!(verify_presentation, m)?)?;
+
+    m.add_function(wrap_pyfunction!(decrypt_proof, m)?)?;
     m.add_function(wrap_pyfunction!(new_keys, m)?)?;
     m.add_function(wrap_pyfunction!(msg_generator, m)?)?;
-    m.add_function(wrap_pyfunction!(decrypt_proof, m)?)?;
     m.add_function(wrap_pyfunction!(domain_proof_generator, m)?)?;
-    m.add_function(wrap_pyfunction!(create_nonce, m)?)?;
     m.add_function(wrap_pyfunction!(create_scalar, m)?)?;
-    m.add_function(wrap_pyfunction!(verify_presentation, m)?)?;
     m.add_function(wrap_pyfunction!(membership_registry, m)?)?;
     m.add_function(wrap_pyfunction!(create_commitment, m)?)?;
-    m.add_function(wrap_pyfunction!(full_demo, m)?)?;
+    m.add_function(wrap_pyfunction!(check_domain_commitment, m)?)?;
 
     Ok(())
 }

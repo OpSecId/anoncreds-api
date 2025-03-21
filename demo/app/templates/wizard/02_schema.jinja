@@ -1,0 +1,107 @@
+{% extends('layouts/base.wizard.jinja') %}
+{% block page %}
+<div class="card card-md">
+    <div class="card-body text-center py-4 p-sm-5">
+        <h1 class="mt-5">AnonCreds v2</h1>
+        <p class="text-secondary">Schema</p>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Credential Info</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-6">
+                <div class="mb-3">
+                    {{ form.name.label(class='form-label') }}
+                    {{ form.name(class='form-control') }}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class='form-label') }}
+                    {{ form.description(class='form-control') }}
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="mb-3">
+                    <label class="form-check">
+                        {{ form.revocation(class='form-check-input') }}
+                        <span class="form-check-label">{{ form.revocation.label() }}</span>
+                        <span class="form-check-description">This will include a revocation claim to manage the credential's
+                            revocation status.</span>
+                    </label>
+                </div>
+                <div class="mb-3">
+                    <label class="form-check">
+                        {{ form.pseudonym(class='form-check-input') }}
+                        <span class="form-check-label">{{ form.pseudonym.label() }}</span>
+                        <span class="form-check-description">This will enhance the holder's privacy.</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-4">
+                <div class="mb-3">
+                    {{ form.hashed_claim.label(class='form-label') }}
+                    {{ form.hashed_claim(class='form-control') }}
+                </div>
+                <div class="mb-3">
+                    {{ form.pattern.label(class='form-label') }}
+                    {{ form.pattern(class='form-control') }}
+                </div>
+                <div class="mb-3">
+                    {{ form.maxLength.label(class='form-label') }}
+                    {{ form.maxLength(class='form-range', min="0", max="255", step="1") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-check">
+                        {{ form.blind(class='form-check-input') }}
+                        <span class="form-check-label">{{ form.blind.label() }}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="mb-3">
+                    {{ form.number_claim.label(class='form-label') }}
+                    {{ form.number_claim(class='form-control') }}
+                </div>
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-6">
+                            {{ form.minValue.label(class='form-label') }}
+                            {{ form.minValue(class='form-control') }}
+                        </div>
+                        <div class="col-6">
+                            {{ form.maxValue.label(class='form-label') }}
+                            {{ form.maxValue(class='form-control') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="mb-3">
+                    {{ form.enumeration_claim.label(class='form-label') }}
+                    {{ form.enumeration_claim(class='form-control') }}
+                </div>
+                <div class="mb-3">
+
+                    {{ form.enumeration_values.label(class='form-label') }}
+                    {{ form.enumeration_values(class='form-select', style='height: 250px;') }}
+                    {# <div class="ts-wrapper form-select multi focus">
+                        <div class="ts-control">
+                        {{ form.enumeration_values(tabindex="0", role="combobox", aria_activedescendant="select-states-opt-4", aria_controls="select-states-ts-dropdown", id="select-states-ts-control", aria_haspopup="listbox", aria_expanded="false") }}
+                        </div>
+                    </div> #}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3 align-items-center mt-3">
+        <div class="col">
+            <div class="btn-list justify-content-end">
+                <a href="{{ url_for('wizard.claims') }}" class="btn btn-link link-secondary btn-2"> Previous </a>
+                <a href="{{ url_for('wizard.issuer') }}" class="btn btn-primary btn-2"> Next </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

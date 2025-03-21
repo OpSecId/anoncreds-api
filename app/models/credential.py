@@ -12,9 +12,10 @@ class BaseModel(BaseModel):
         """Dump the model to a dictionary."""
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
 
+
 class Credential(BaseModel):
     pass
 
+
 class CredentialRequest(BaseModel):
     pass
-

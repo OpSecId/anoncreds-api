@@ -1,0 +1,65 @@
+<div class="modal modal-lg modal-blur fade" id="modal-checkout-shoes" tabindex="-1" style="display: none;"
+    aria-hidden="true">
+    <div class="modal-dialog modal-1 modal-dialog-centered" role="document">
+        <div class="modal-content">
+            {# <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div> #}
+            <div class="modal-body">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="h3">StrideHub Shoes</p>
+                            <address>sales@stridehub.store.example</address>
+                        </div>
+                    </div>
+                    <table class="table table-transparent table-responsive">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 1%"></th>
+                                <th>Product</th>
+                                <th class="text-center" style="width: 1%">Qnt</th>
+                                <th class="text-end" style="width: 1%">Unit</th>
+                                <th class="text-end" style="width: 1%">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">1</td>
+                                <td>
+                                    <p class="strong mb-1">VelocityX</p>
+                                    <div class="text-secondary">AeroSprint v1</div>
+                                </td>
+                                <td class="text-center">1</td>
+                                <td class="text-end">$1,499.95</td>
+                                <td class="text-end">$1,499.95</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="strong text-end">Subtotal</td>
+                                <td class="text-end">$1,499.95</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="strong text-end">Vat Rate</td>
+                                <td class="text-end">20%</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="strong text-end">Vat Due</td>
+                                <td class="text-end">$299.99</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="font-weight-bold text-uppercase text-end">Total Due</td>
+                                <td class="font-weight-bold text-end">$1,799.94</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {# <p class="text-secondary text-center mt-5">Are you a SynergiPay member?</p> #}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('show_presentation', presentation='shoes-checkout' )}}" class="btn btn-primary">SynergiPay Checkout</a>
+            </div>
+        </div>
+    </div>
+</div>

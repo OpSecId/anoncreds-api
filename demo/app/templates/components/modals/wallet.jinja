@@ -1,8 +1,28 @@
-<div class="row row-deck row-cards">
-    <div class="col-4">
-        {% include('components/credit-card.jinja') %}
-    </div>
-    <div class="col-4">
-        {% include('components/membership-card.jinja') %}
+<div class="modal modal-blur fade" id="modal-wallet" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-1 modal-dialog-centered" role="document">
+        <div class="modal-content">
+            {# <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div> #}
+            <div class="modal-body">
+                <div class="row row-deck row-cards">
+                    {% if 'credit-card' in session['credentials'] %}
+                    <div class="col-12">
+                        {% include('components/credit-card.jinja') %}
+                    </div>
+                    {% endif %}
+                    {% if 'rebates-card' in session['credentials'] %}
+                    <div class="col-12">
+                        {% include('components/membership-card.jinja') %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {# <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+            </div> #}
+        </div>
     </div>
 </div>

@@ -1,0 +1,108 @@
+{% extends('layouts/base.wizard.jinja') %}
+{% block page %}
+<div class="card card-md">
+    <div class="card-body text-center py-4 p-sm-5">
+        <h1 class="mt-5">AnonCreds v2</h1>
+        <p class="text-secondary">Schema</p>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Claim Types</div>
+    <div class="card-body">
+
+        {# <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Enumeration</div>
+                    <div class="text-secondary">Defines a fixed set of values where the claim value is one of them.
+                    </div>
+                </div>
+            </div>
+        </a> #}
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Number</div>
+                    <div class="text-secondary">A claim is a 64-bit integer like numbers, dates, and times.
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Hashed</div>
+                    <div class="text-secondary">The claim is an arbitrary length value that will be hashed like strings,
+                        images, and biometrics.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Scalar</div>
+                    <div class="text-secondary">The claim is already a cryptographic value and should be taken as is
+                        like a secret key.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Revocation</div>
+                    <div class="text-secondary">The claim is meant to indicate revocation status of the claim.</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Validators</div>
+    <div class="card-body">
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Length</div>
+                    <div class="text-secondary">Checks the claim's length is correct.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Range</div>
+                    <div class="text-secondary">Checks if the claim value is between the correct range.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Regex</div>
+                    <div class="text-secondary">Check if the claim data matches a regular expression.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">AnyOne</div>
+                    <div class="text-secondary">Check if a claim value matches any value in the list.</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="row mb-3 align-items-center mt-3">
+        <div class="col">
+            <div class="btn-list justify-content-end">
+                <a href="{{ url_for('wizard.intro') }}" class="btn btn-link link-secondary btn-2"> Previous </a>
+                <a href="{{ url_for('wizard.schema') }}" class="btn btn-primary btn-2"> Next </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

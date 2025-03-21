@@ -1,0 +1,89 @@
+{% extends('layouts/base.wizard.jinja') %}
+{% block page %}
+<div class="card card-md">
+    <div class="card-body text-center py-4 p-sm-5">
+        <h1 class="mt-5">AnonCreds v2</h1>
+        <p class="text-secondary">Issuer</p>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Schema</div>
+    <div class="card-body">
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Claims</div>
+                    <div class="text-secondary">Ordered set of claims with their validators.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Indices</div>
+                    <div class="text-secondary">Set of claim indices.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Blinds</div>
+                    <div class="text-secondary">Set of blindable claims.</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Keys</div>
+    <div class="card-body">
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Verification Keys</div>
+                    <div class="text-secondary">Used to sign/verify individual claims.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Encryption Key</div>
+                    <div class="text-secondary">Used to encrypt/decrypt verifiable encryptions.</div>
+                </div>
+            </div>
+        </a>
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Revocation Key</div>
+                    <div class="text-secondary">Used to update/verify revocation registry.</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="hr-text hr-text-center hr-text-spaceless">Revocation Registry</div>
+    <div class="card-body">
+
+        <a class="card-link" href="#">
+            <div class="row mb-3">
+                <div class="col">
+                    <div class="font-weight-medium">Accumulator</div>
+                    <div class="text-secondary">Cryptographic state of the revocation registry.</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="row mb-3 align-items-center mt-3">
+        <div class="col">
+            <div class="btn-list justify-content-end">
+                <a href="{{ url_for('wizard.schema') }}" class="btn btn-link link-secondary btn-2"> Previous </a>
+                {# <a href="{{ url_for('wizard.issuer_json') }}" class="btn btn-primary btn-2"> Next </a> #}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

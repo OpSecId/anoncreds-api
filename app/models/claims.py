@@ -35,6 +35,8 @@ class ClaimSchema(BaseModel):
         Field()
     )
     label: str = Field()
-    validators: List[Union[dict, LengthValidator,RangeValidator,RegexValidator,AnyOne]] = Field([])
+    validators: List[
+        Union[dict, LengthValidator, RangeValidator, RegexValidator, AnyOne]
+    ] = Field([])
     # validators: List[dict] = Field([])
     print_friendly: bool = Field(False)

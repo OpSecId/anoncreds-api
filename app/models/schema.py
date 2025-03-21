@@ -37,11 +37,7 @@ class JsonSchema(BaseModel):
                     "type": "object",
                     "title": "Sample Credential",
                     "description": "A sample credential",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        }
-                    },
+                    "properties": {"name": {"type": "string"}},
                 }
             ]
         }

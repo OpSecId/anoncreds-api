@@ -1,41 +1,50 @@
 {% extends ('layouts/base.jinja') %}
 {% block page %}
-<div class="container-xl">
+{% include ('components/modals/wallet.jinja') %}
+{% include ('components/modals/receipts.jinja') %}
+{% include ('components/modals/issue-credit-card.jinja') %}
+{% include ('components/modals/issue-rebates-card.jinja') %}
+{% include ('components/modals/checkout-shoes.jinja') %}
+{% include ('components/modals/checkout-shorts.jinja') %}
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row g-2 align-items-center">
             <div class="col">
                 <!-- Page pre-title -->
-                <div class="page-pretitle">Overview</div>
-                <h2 class="page-title">Dashboard</h2>
+                <div class="page-pretitle">AnonCreds V2</div>
+                <h2 class="page-title">Anonymous purchase</h2>
             </div>
             <!-- Page title actions -->
             <div class="col-auto ms-auto d-print-none">
                 <div class="btn-list">
                     <span class="d-none d-sm-inline">
-                        <a href="#" class="btn btn-1"> New view </a>
+                        <a href="#" class="btn btn-1" data-bs-toggle="modal" data-bs-target="#modal-wallet">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-wallet">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
+                                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
+                            </svg>
+                            Credential Cards
+                        </a>
                     </span>
-                    <a href="#" class="btn btn-primary btn-5 d-none d-sm-inline-block" data-bs-toggle="modal"
-                        data-bs-target="#modal-report">
-                        <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon icon-2">
-                            <path d="M12 5l0 14"></path>
-                            <path d="M5 12l14 0"></path>
-                        </svg>
-                        Create new report
-                    </a>
-                    <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal"
-                        data-bs-target="#modal-report" aria-label="Create new report">
-                        <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon icon-2">
-                            <path d="M12 5l0 14"></path>
-                            <path d="M5 12l14 0"></path>
-                        </svg>
-                    </a>
+                    <span class="d-none d-sm-inline">
+                        <a href="#" class="btn btn-1" data-bs-toggle="modal" data-bs-target="#modal-receipts">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="icon icon-tabler icons-tabler-outline icon-tabler-wallet">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12" />
+                                <path d="M20 12v4h-4a2 2 0 0 1 0 -4h4" />
+                            </svg>
+                            Presentation Receipts
+                        </a>
+                    </span>
                 </div>
             </div>
         </div>
@@ -43,15 +52,113 @@
 </div>
 <div class="page-body">
     <div class="container-xl">
-        <div class="row row-deck row-cards">
-            <div class="col-4">
-                {% include('components/credit-card.jinja') %}
+
+        <div class="row row-cards">
+            <div class="col-12">
+                <a class="card card-link" href="#" data-bs-toggle="modal" data-bs-target="#modal-issue-credit-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-2 rounded" style="background-image: url({{ url_for('static', filename='img/neovault.png')}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">NeoVault FluxCard</div>
+                                <div class="text-secondary">Apply for a cutting edge digital credit card</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
-            <div class="col-4">
-                {% include('components/membership-card.jinja') %}
+            <div class="col-12">
+                <a class="card card-link" href="#" data-bs-toggle="modal" data-bs-target="#modal-issue-rebates-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-2 rounded" style="background-image: url({{ url_for('static', filename='img/synergipay.png')}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">SynergiPay Instant Rebates Card</div>
+                                <div class="text-secondary">Register for discounts from member stores</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12">
+                <a class="card card-link" href="#" data-bs-toggle="modal" data-bs-target="#modal-checkout-shoes">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-2 rounded" style="background-image: url({{ url_for('static', filename='img/stridehub.png')}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">StrideHub Shoes</div>
+                                <div class="text-secondary">Purchase a pair of AeroSprints designed by VelocityX</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12">
+                <a class="card card-link" href="#" data-bs-toggle="modal" data-bs-target="#modal-checkout-shorts">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-2 rounded" style="background-image: url({{ url_for('static', filename='img/threadly.png')}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">Threadly Clothing</div>
+                                <div class="text-secondary">Purchase a pair of BreezeFit Advanced shorts from FlexWear</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
+
+        {# <div class="row row-cards">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-md">
+                    <div class="card-body text-center">
+                        <div class="text-uppercase text-secondary font-weight-medium">Free</div>
+                        <div class="display-5 fw-bold my-3">$0</div>
+                        <ul class="list-unstyled lh-lg">
+                            <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon me-1 text-success icon-2">
+                                    <path d="M5 12l5 5l10 -10"></path>
+                                </svg> Basic Rebates</li>
+                            <li><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon me-1 text-danger icon-2">
+                                    <path d="M18 6l-12 12"></path>
+                                    <path d="M6 6l12 12"></path>
+                                </svg> Premium Rebates</li>
+                            <li> Legacy Rebates</li>
+                            <li> Anniversary Month</li>
+                        </ul>
+                        <div class="text-center mt-4">
+                            <a href="#" class="btn w-100">Choose plan</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> #}
+        {# <section class="section section-light mt-n12 pt-12">
+            <div class="container">
+                <div class="section-header mb-6">
+                    <h2 class="section-title text-muted">Now over 1 participating store!</h2>
+                </div>
+                <div class="row g-8 align-items-center justify-content-center">
+                    <div class="col-auto">
+                        <a href="#" class="link-muted">Threadly</a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="#" class="link-muted">StrideHub</a>
+                    </div>
+                </div>
+            </div>
+        </section> #}
     </div>
-</div>
 </div>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends('layouts/base.wizard.jinja') %}
+{% block page %}
+<div class="card card-md">
+    <div class="card-body text-center py-4 p-sm-5">
+        <h1 class="mt-5">AnonCreds v2</h1>
+        <p class="text-secondary">Setting up an issuer</p>
+    </div>
+    <div class="row mb-3 align-items-center mt-3">
+        <div class="col">
+            <div class="btn-list justify-content-end">
+                {# <a href="{% url_for('claims') %}" class="btn btn-link link-secondary btn-2"> Previous </a> #}
+                <a href="{{ url_for('wizard.claims') }}" class="btn btn-primary btn-2"> Next </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
