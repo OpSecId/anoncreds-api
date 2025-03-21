@@ -120,7 +120,6 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
 
     anoncreds = AnonCredsV2()
     issuer_pub, issuer_priv = anoncreds.setup_issuer(cred_schema)
-    schema = issuer_pub.pop('schema')
 
     askar = AskarStorage()
 
@@ -134,9 +133,7 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
         'type': 'Multikey',
         'id': f'{did}#{public_key_multi}',
         'controller': did,
-        'publicKeyMultibase': public_key_multi,
-        # 'schemaEndpoint': f'https://{settings.DOMAIN}/resources/{schema.get("id")}',
-        # 'stuffEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}'
+        'publicKeyMultibase': public_key_multi
     })
     did_document['service'].append({
         'type': 'AnonCredsRegistry',
