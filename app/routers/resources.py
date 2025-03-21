@@ -102,7 +102,9 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
     if not did_document:
         did_document = {
             '@context': [
-                'https://www.w3.org/ns/did/v1'
+                'https://www.w3.org/ns/did/v1',
+                'https://w3id.org/security/multikey/v1',
+                {'AnonCredsRegistry': 'https://www.w3.org/ns/credentials/undefined-term#AnonCredsRegistry'}
             ],
             'id': did,
             'verificationMethod': [],
@@ -129,9 +131,10 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
     public_key_multi = public_key_multibase(
         issuer_pub.get("verifying_key").get("w"), "bls"
     )
+    verification_method = f'{did}#{public_key_multi}'
     did_document['verificationMethod'].append({
         'type': 'Multikey',
-        'id': f'{did}#{public_key_multi}',
+        'id': verification_method,
         'controller': did,
         'publicKeyMultibase': public_key_multi
     })
@@ -139,7 +142,7 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
         'type': 'AnonCredsRegistry',
         'id': f'{did}#{issuer_pub.get("id")}',
         'serviceEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}',
-        'verificationMethod': f'{did}#key-{public_key_multi}'
+        'verificationMethod': verification_method
     })
     await askar.update("didDocument", issuer_id, did_document)
 
