@@ -131,7 +131,7 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
     public_key_multi = public_key_multibase(
         issuer_pub.get("verifying_key").get("w"), "bls"
     )
-    verification_method = f'{did}#{public_key_multi}'
+    verification_method = f'{did}#{len(did_document["verificationMethod"])}'
     did_document['verificationMethod'].append({
         'type': 'Multikey',
         'id': verification_method,
