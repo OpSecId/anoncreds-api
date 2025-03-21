@@ -19,33 +19,33 @@ from config import settings
 router = APIRouter(tags=["Operations"])
 
 
-@router.post("/credentials/setup")
-async def setup_credential(request_body: SetupIssuerRequest):
-    """"""
-    request_body = request_body.model_dump()
+# @router.post("/credentials/setup")
+# async def setup_credential(request_body: SetupIssuerRequest):
+#     """"""
+#     request_body = request_body.model_dump()
 
-    cred_schema_id = request_body.get("credSchemaId")
+#     cred_schema_id = request_body.get("credSchemaId")
 
-    askar = AskarStorage()
-    cred_schema = await askar.fetch("resource", cred_schema_id)
+#     askar = AskarStorage()
+#     cred_schema = await askar.fetch("resource", cred_schema_id)
 
-    if not cred_schema:
-        raise HTTPException(status_code=404, detail="No schema found.")
+#     if not cred_schema:
+#         raise HTTPException(status_code=404, detail="No schema found.")
 
-    anoncreds = AnonCredsV2()
-    issuer_pub, issuer_priv = anoncreds.setup_issuer(cred_schema)
+#     anoncreds = AnonCredsV2()
+#     issuer_pub, issuer_priv = anoncreds.setup_issuer(cred_schema)
 
-    askar = AskarStorage()
+#     askar = AskarStorage()
 
-    await askar.store("resource", issuer_pub.get("id"), issuer_pub)
-    await askar.store("secret", issuer_priv.get("id"), issuer_priv)
+#     await askar.store("resource", issuer_pub.get("id"), issuer_pub)
+#     await askar.store("secret", issuer_priv.get("id"), issuer_priv)
 
-    issuer_pub.pop("schema")
-    issuer_priv.pop("schema")
+#     issuer_pub.pop("schema")
+#     issuer_priv.pop("schema")
 
-    return JSONResponse(
-        status_code=201, content={"public": issuer_pub, "private": issuer_priv}
-    )
+#     return JSONResponse(
+#         status_code=201, content={"public": issuer_pub, "private": issuer_priv}
+#     )
 
 
 @router.post("/credentials/request")

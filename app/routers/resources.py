@@ -105,7 +105,8 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
                 'https://www.w3.org/ns/did/v1'
             ],
             'id': did,
-            'verificationMethod': []
+            'verificationMethod': [],
+            'service': [],
         }
         await askar.store('didDocument', issuer_id, did_document)
         
@@ -127,15 +128,22 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
     await askar.store("secret", issuer_priv.get("id"), issuer_priv)
 
     
+    key_id = len(did_document["verificationMethod"])
     did_document['verificationMethod'].append({
-        'type': 'AnonCredsStuff',
-        'id': f'{did}#{issuer_pub.get("id")}',
+        'type': 'Multikey',
+        'id': f'{did}#key-{key_id}',
         'controller': did,
         'publicKeyMultibase': public_key_multibase(
             issuer_pub.get("verifying_key").get("w"), "bls"
         ),
         # 'schemaEndpoint': f'https://{settings.DOMAIN}/resources/{schema.get("id")}',
-        'stuffEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}'
+        # 'stuffEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}'
+    })
+    
+    did_document['service'].append({
+        'type': 'AnonCredsRegistry',
+        'id': f'{did}#registry-{key_id}',
+        'serviceEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}'
     })
     await askar.update("didDocument", issuer_id, did_document)
 
