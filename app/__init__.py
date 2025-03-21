@@ -1,7 +1,8 @@
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.routers import resources, utilities, vc_api, operations
+from app.plugins import AskarStorage
 
 from config import settings
 
@@ -14,6 +15,15 @@ api_router = APIRouter()
 async def server_status():
     """Server status endpoint."""
     return JSONResponse(status_code=200, content={"status": "ok"})
+
+@api_router.get("/issuers/{issuer_id}/did.json", include_in_schema=False)
+async def resolve_issuer_did(issuer_id: str = 'demo'):
+    """Server status endpoint."""
+    askar = AskarStorage()
+    did_document = await askar.fetch('didDocument', issuer_id)
+    if not did_document:
+        raise HTTPException(status_code=404, detail="No issuer found.")
+    return JSONResponse(status_code=200, content=did_document)
 
 
 api_router.include_router(resources.router, prefix="/resources")

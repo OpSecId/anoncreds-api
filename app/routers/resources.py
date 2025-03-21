@@ -3,8 +3,9 @@
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import JSONResponse
 
-from app.models.web_requests import NewCredSchema, NewPresSchema
+from app.models.web_requests import NewCredSchema, NewPresSchema, SetupIssuerRequest
 from app.plugins import AskarStorage, AnonCredsV2
+from app.utils import public_key_multibase
 from config import settings
 
 router = APIRouter(tags=["Resources"])
@@ -78,4 +79,66 @@ async def new_pres_schema(request_body: NewPresSchema):
         content={
             "presentationSchema": pres_schema,
         },
+    )
+
+
+@router.get("/issuers/{issuer_id}")
+async def get_issuer_did_document(issuer_id: str = 'demo'):
+    """Server status endpoint."""
+    askar = AskarStorage()
+    did_document = await askar.fetch('didDocument', issuer_id)
+    if not did_document:
+        raise HTTPException(status_code=404, detail="No issuer found.")
+    return JSONResponse(status_code=200, content={'didDocument', did_document})
+
+
+@router.post("/issuers/{issuer_id}")
+async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer_id: str = 'demo'):
+    request_body = request_body.model_dump()
+    
+    askar = AskarStorage()
+    did = f'did:web:{settings.DOMAIN}:issuers:{issuer_id}'
+    did_document = await askar.fetch('didDocument', issuer_id)
+    if not did_document:
+        did_document = {
+            '@context': [
+                'https://www.w3.org/ns/did/v1'
+            ],
+            'id': did,
+            'verificationMethod': []
+        }
+        await askar.store('didDocument', issuer_id, did_document)
+        
+    cred_schema_id = request_body.get("credSchemaId")
+
+    askar = AskarStorage()
+    cred_schema = await askar.fetch("resource", cred_schema_id)
+
+    if not cred_schema:
+        raise HTTPException(status_code=404, detail="No schema found.")
+
+    anoncreds = AnonCredsV2()
+    issuer_pub, issuer_priv = anoncreds.setup_issuer(cred_schema)
+    schema = issuer_pub.pop('schema')
+
+    askar = AskarStorage()
+
+    await askar.store("resource", issuer_pub.get("id"), issuer_pub)
+    await askar.store("secret", issuer_priv.get("id"), issuer_priv)
+
+    
+    did_document['verificationMethod'].append({
+        'type': 'AnonCredsStuff',
+        'id': f'{did}#{issuer_pub.get("id")}',
+        'controller': did,
+        'publicKeyMultibase': public_key_multibase(
+            issuer_pub.get("verifying_key").get("w"), "bls"
+        ),
+        # 'schemaEndpoint': f'https://{settings.DOMAIN}/resources/{schema.get("id")}',
+        'stuffEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}'
+    })
+    await askar.update("didDocument", issuer_id, did_document)
+
+    return JSONResponse(
+        status_code=201, content={"didDocument": did_document}
     )

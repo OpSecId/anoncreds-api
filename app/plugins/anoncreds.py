@@ -3,7 +3,7 @@ import json
 import uuid
 from app.models.claims import ClaimSchema  # , LengthValidator, RangeValidator
 from app.models.schema import CredentialSchema
-from app.utils import digest_multibase, multibase_encode, public_key_multibase
+from app.utils import digest_multibase, multibase_encode, public_key_multibase, to_encoded_cbor, from_encoded_cbor
 from config import settings
 from bitstring import Array
 from array import array
@@ -120,7 +120,7 @@ class AnonCredsV2:
                 statements.append(
                     {
                         "Signature": {
-                            "id": query.get("refId"),
+                            "id": query.get("referenceId"),
                             "disclosed": query.get("disclosed", []),
                             "issuer": issuer,
                         }
@@ -128,7 +128,7 @@ class AnonCredsV2:
                 )
                 statement = {
                     "claim": 0,
-                    "reference_id": query.get("refId"),
+                    "reference_id": query.get("referenceId"),
                     "accumulator": issuer.get("revocation_registry"),
                     "verification_key": issuer.get("revocation_verifying_key"),
                 }
@@ -138,7 +138,7 @@ class AnonCredsV2:
                 for commitment in query.get("commitment", []):
                     statement = {
                         "claim": indices.index(commitment.get("claimRef")),
-                        "reference_id": query.get("refId"),
+                        "reference_id": query.get("referenceId"),
                         "blinder_generator": commitment.get("blinderGenerator"),
                         "message_generator": commitment.get("messageGenerator"),
                     }
@@ -149,7 +149,7 @@ class AnonCredsV2:
                         statement = {
                             "claim": indices.index(commitment.get("claimRef")),
                             "reference_id": statement.get("id"),
-                            "signature_id": query.get("refId"),
+                            "signature_id": query.get("referenceId"),
                             "upper": commitment.get("range").get("upper"),
                             "lower": commitment.get("range").get("lower")
                         }
@@ -160,7 +160,7 @@ class AnonCredsV2:
                 for encryption in query.get("encryption", []):
                     statement = {
                         "claim": indices.index(encryption.get("claimRef")),
-                        "reference_id": query.get("refId"),
+                        "reference_id": query.get("referenceId"),
                         "message_generator": self.domain_proof_generator(
                             encryption.get("domain")
                         ),
@@ -294,14 +294,16 @@ class AnonCredsV2:
         return self._sanitize_input(generator)
 
     def credential_request(self, cred_def, blind_claims):
-        cred_request, blinder = anoncreds_api.request_credential(
+        blind_claims, cred_request, blinder = anoncreds_api.new_cred_request(
             json.dumps(cred_def),
             json.dumps(blind_claims),
         )
-        cred_request, blinder = self._sanitize_input(
-            cred_request
-        ), self._sanitize_input(blinder)
-        return cred_request, blinder
+        blind_claims, cred_request, blinder = (
+            self._sanitize_input(blind_claims),
+            self._sanitize_input(cred_request),
+            self._sanitize_input(blinder)
+        )
+        return blind_claims, to_encoded_cbor(cred_request), blinder
 
     def cred_to_w3c(self, issuer, credential_input):
         schema = issuer.get("schema")
@@ -352,9 +354,21 @@ class AnonCredsV2:
         return credential
 
     def issue_credential(self, claims_data):
-        response = anoncreds_api.sign_credential(
+        response = anoncreds_api.issue_credential(
             json.dumps(self.issuer),
             json.dumps(claims_data),
+        )
+        response = self._sanitize_input(response)
+        credential = response.get("credential")
+        # credential = self.cred_to_w3c(response.get('issuer'), credential)
+        return credential
+
+    def issue_blind_credential(self, claims_map, request_proof):
+        cred_request = from_encoded_cbor(request_proof)
+        response = anoncreds_api.issue_blind_credential(
+            json.dumps(self.issuer),
+            json.dumps(claims_map),
+            json.dumps(cred_request),
         )
         response = self._sanitize_input(response)
         credential = response.get("credential")
@@ -398,3 +412,10 @@ class AnonCredsV2:
             json.dumps(value), json.dumps(domain).encode()
         )
         return self._sanitize_input(commitment)
+
+    def unblind_credential(self, credential, cred_def, blinder=None):
+        credential = anoncreds_api.reveal_blind_credential(
+            json.dumps(credential), json.dumps(cred_def), json.dumps(blinder)
+        )
+        credential = self._sanitize_input(credential)
+        return credential.get('credential')

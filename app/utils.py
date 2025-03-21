@@ -21,6 +21,12 @@ def public_key_multibase(key_hex, key_type):
     )
 
 
+def to_encoded_cbor(data):
+    return multibase.encode(dumps(data), "base58btc")
+
+def from_encoded_cbor(data):
+    return loads(multibase.decode(data))
+
 def to_cbor(data):
     return dumps(data)
 

@@ -1,0 +1,11 @@
+
+
+CRED_ID = '4e8ff788-65ec-4eac-9c95-19867f43e855'
+CRED_NAME = 'Test Credential'
+CRED_DESC = 'A test credential'
+
+SUBJECT_AGE = 24
+SUBJECT_NAME = 'Jane Doe'
+SUBJECT_PROV = 'BC'
+
+LINK_SECRET = '5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86'

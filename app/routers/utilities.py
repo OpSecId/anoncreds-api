@@ -9,6 +9,7 @@ from app.models.web_requests import (
     MessageGeneratorRequest,
     DecryptProofRequest,
     CreateCommitmentRequest,
+    UnblindCredentialRequest,
 )
 from app.plugins import AskarStorage, AnonCredsV2
 from config import settings
@@ -122,5 +123,36 @@ async def create_commitment(request_body: CreateCommitmentRequest):
         status_code=201,
         content={
             "commitment": commitment,
+        },
+    )
+
+
+@router.post("/unblind")
+async def reveal_blinded_credential(request_body: UnblindCredentialRequest):
+    request_body = request_body.model_dump()
+    
+    credential = request_body.get('credential')
+    options = request_body.get('options')
+    
+    askar = AskarStorage()
+    cred_def = await askar.fetch('resource', options.get('verificationMethod'))
+    if not cred_def:
+        raise HTTPException(status_code=404, detail="No credential definition.")
+
+    blind_bundle = {
+        'credential': credential,
+        'issuer': cred_def
+    }
+    blind_claims = {"linkSecret": {"Scalar": {"value": options.get('linkSecret')}}}
+    
+    anoncreds = AnonCredsV2()
+    credential = anoncreds.unblind_credential(
+        blind_bundle, blind_claims, options.get('blinder')
+    )
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "credential": credential,
         },
     )

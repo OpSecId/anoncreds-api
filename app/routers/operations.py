@@ -53,7 +53,7 @@ async def request_credential(request_body: BlindCredentialRequest):
     """"""
     request_body = request_body.model_dump()
 
-    cred_def_id = request_body.get("credDefId")
+    cred_def_id = request_body.get("verificationMethod")
     link_secret = request_body.get("linkSecret")
 
     askar = AskarStorage()
@@ -64,12 +64,13 @@ async def request_credential(request_body: BlindCredentialRequest):
     anoncreds = AnonCredsV2()
 
     blind_claims = {"linkSecret": {"Scalar": {"value": link_secret}}}
-    cred_request, blinder = anoncreds.credential_request(cred_def, blind_claims)
+    blind_claims, cred_request, blinder = anoncreds.credential_request(cred_def, blind_claims)
 
     return JSONResponse(
         status_code=201,
         content={
-            "request": cred_request,
+            "blindClaims": blind_claims,
+            "requestProof": cred_request,
             "blinder": blinder,
         },
     )
@@ -80,30 +81,31 @@ async def issue_credential(request_body: IssueCredentialRequest):
     """"""
     request_body = request_body.model_dump()
 
-    credential = request_body.get("credential")
-    credential_request = request_body.get("credentialRequest")
-    subject = request_body.get("credentialSubject")
+    cred_subject = request_body.get("credentialSubject")
+    
     options = request_body.get("options")
     cred_id = options.get("credentialId") or str(uuid.uuid4())
-
-    cred_def_id = options.get("credDefId")
+    cred_def_id = options.get("verificationMethod")
+    request_proof = options.get("requestProof")
+    
     issuer = await AskarStorage().fetch("secret", cred_def_id)
     cred_def = await AskarStorage().fetch("resource", cred_def_id)
+    
     if not cred_def or not issuer:
         raise HTTPException(status_code=404, detail="No issuer.")
-    print(issuer)
-
-    # if not credential or not options:
-    #     raise HTTPException(status_code=400, detail="Missing input.")
-
-    # if credential_request:
-    #     pass
 
     issuer = AnonCredsV2(issuer=issuer)
-    # cred_id = str(uuid.uuid4())
-    claims_data = issuer.map_claims(cred_def, subject, cred_id)
-    signed_credential = issuer.issue_credential(claims_data)
-    # signed_credential = {}
+    claims_data = issuer.map_claims(cred_def, cred_subject, cred_id)
+    if request_proof:
+        claim_indices = cred_def['schema'].get('claim_indices')
+        claim_indices.remove('linkSecret')
+        claims_map = {}
+        for idx, claim in enumerate(claims_data):
+            claims_map[claim_indices[idx]] = claim
+        signed_credential = issuer.issue_blind_credential(claims_map, request_proof)
+    
+    else:
+        signed_credential = issuer.issue_credential(claims_data)
 
     return JSONResponse(status_code=201, content=signed_credential)
 
@@ -116,7 +118,7 @@ async def create_presentation(request_body: CreatePresentationRequest):
     challenge = options.get("challenge")
 
     askar = AskarStorage()
-    pres_req = await askar.fetch("resource", options.get("presReqId"))
+    pres_req = await askar.fetch("resource", options.get("presSchemaId"))
 
     anoncreds = AnonCredsV2()
     presentation = anoncreds.create_presentation(pres_req, credential, challenge)

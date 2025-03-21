@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use rand::{thread_rng, RngCore};
 use indexmap::{indexmap, IndexMap};
 // use maplit::{btreemap, btreeset};
-use ::credx::blind::BlindCredentialRequest;
+use ::credx::blind::{BlindCredentialBundle, BlindCredentialRequest};
 use ::credx::claim::{Claim, ClaimData, ClaimType, HashedClaim, RevocationClaim};
 // use ::credx::claim::{ClaimType, ClaimValidator, HashedClaim, RevocationClaim, NumberClaim, ScalarClaim};
 use ::credx::{
@@ -47,11 +47,12 @@ fn new_issuer(schema: String) -> (String, String) {
 }
 
 #[pyfunction]
-fn new_cred_request(issuer_public: String, blind_claims: String) -> (String, String) {
+fn new_cred_request(issuer_public: String, blind_claims: String) -> (String, String, String) {
     let issuer_public: IssuerPublic<BbsScheme> = serde_json::from_str(&issuer_public).unwrap();
     let blind_claims: BTreeMap<String, ClaimData> = serde_json::from_str(&blind_claims).unwrap();
     let (request, blinder): (BlindCredentialRequest<BbsScheme>, Scalar) = BlindCredentialRequest::new(&issuer_public, &blind_claims).unwrap();
     (
+        format!("{}", serde_json::to_string(&blind_claims).unwrap()),
         format!("{}", serde_json::to_string(&request).unwrap()),
         format!("{}", serde_json::to_string(&blinder).unwrap())
     )
@@ -70,11 +71,11 @@ fn issue_blind_credential(issuer_private: String, claims_data: String, cred_requ
     let mut issuer_private: Issuer<BbsScheme> = serde_json::from_str(&issuer_private).unwrap();
     let cred_request: BlindCredentialRequest<BbsScheme> = serde_json::from_str(&cred_request).unwrap();
     let claims_data: BTreeMap<String, ClaimData> = serde_json::from_str(&claims_data).unwrap();
-    // let blind_bundle = issuer_private.blind_sign_credential(
-    //     &cred_request,
-    //     &claims_data,
-    // );
-    format!("{}", serde_json::to_string(&cred_request).unwrap())
+    let blind_bundle = issuer_private.blind_sign_credential(
+        &cred_request,
+        &claims_data,
+    ).unwrap();
+    format!("{}", serde_json::to_string(&blind_bundle).unwrap())
 }
 
 #[pyfunction]
@@ -134,6 +135,28 @@ fn create_scalar() -> String {
 }
 
 #[pyfunction]
+fn derive_scalar(value: String) -> String {
+    let value: String = serde_json::from_str(&value).unwrap();
+    let value_hash: HashedClaim = HashedClaim::from(value);
+    let value_scalar: Scalar = value_hash.to_scalar();
+    format!("{}", serde_json::to_string(&value_scalar).unwrap())
+}
+
+#[pyfunction]
+fn create_key_scalar() -> (String, String, String) {
+    let (encryption_key, decryption_key) =
+        generate_verifiable_encryption_keys(thread_rng());
+    let encryption_key_hex: String = serde_json::to_string(&encryption_key).unwrap();
+    let encryption_key_hash: HashedClaim = HashedClaim::from(encryption_key_hex);
+    let encryption_key_scalar: Scalar = encryption_key_hash.to_scalar();
+    (
+        format!("{}", serde_json::to_string(&encryption_key_scalar).unwrap()),
+        format!("{}", serde_json::to_string(&decryption_key).unwrap()),
+        format!("{}", serde_json::to_string(&encryption_key).unwrap())
+    )
+}
+
+#[pyfunction]
 fn membership_registry() -> (String, String, String) {
     let sk = MembershipSigningKey::new(None);
     let vk = MembershipVerificationKey::from(&sk);
@@ -157,6 +180,17 @@ fn create_commitment(value: String, domain: &[u8]) -> String {
     format!("{}", serde_json::to_string(&value_commitment).unwrap())
 }
 
+#[pyfunction]
+fn reveal_blind_credential(blind_bundle: String, blind_claims: String, blinder: String) -> String {
+    let blinder: Scalar = serde_json::from_str(&blinder).unwrap();
+    let blind_claims: BTreeMap<String, ClaimData> = serde_json::from_str(&blind_claims).unwrap();
+    let blind_bundle: BlindCredentialBundle<BbsScheme> = serde_json::from_str(&blind_bundle).unwrap();
+
+    let credential = blind_bundle.to_unblinded(&blind_claims, blinder).unwrap();
+
+    format!("{}", serde_json::to_string(&credential).unwrap())
+}
+
 #[pymodule]
 fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(new_cred_schema, m)?)?;
@@ -177,6 +211,8 @@ fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(membership_registry, m)?)?;
     m.add_function(wrap_pyfunction!(create_commitment, m)?)?;
     m.add_function(wrap_pyfunction!(check_domain_commitment, m)?)?;
+    m.add_function(wrap_pyfunction!(reveal_blind_credential, m)?)?;
+    m.add_function(wrap_pyfunction!(create_key_scalar, m)?)?;
 
     Ok(())
 }

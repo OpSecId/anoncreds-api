@@ -31,7 +31,7 @@ class BaseModel(BaseModel):
 
 
 class CredSchemaOptions(BaseModel):
-    linkSecret: bool = Field(False)
+    linkSecret: bool = Field(True)
     # setupIssuer: bool = Field(False)
 
 
@@ -44,34 +44,26 @@ class NewCredSchema(BaseModel):
 
 
 class NewPresSchemaOptions(BaseModel):
-    credDefId: str = Field()
-    domain: str = Field(None, example="anoncreds.vc")
-    disclosedClaims: List[str] = Field([], example=["name"])
+    pass
 
 
 class NewPresSchema(BaseModel):
     """NewPresSchema model."""
 
     query: List[Union[SignatureQuery, EqualityQuery]] = Field()
-    # challenge: str = Field(None)
-    # signatures: List[ProofRequest] = Field()
-    # equalities: List[List[EqualityClaim]] = Field()
-
-
-class SetupIssuerOptions(BaseModel):
-    credSchemaId: str = Field(example=settings.TEST_VALUES.get("schema_id"))
 
 
 class SetupIssuerRequest(BaseModel):
     """SetupIssuerRequest model."""
 
-    credSchemaId: str = Field(example=settings.TEST_VALUES.get("schema_id"))
-    # options: SetupIssuerOptions = Field()
+    credSchemaId: str = Field(example="zQmNb6UsQsMjTbE98wn2AFPVuviG4cCgEXX8WRyzYyUPhjF")
 
 
 class IssueCredentialOptions(BaseModel):
     credentialId: str = Field(None)
-    verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    revocationId: str = Field(None)
+    requestProof: str = Field(None)
+    verificationMethod: str = Field(example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP")
 
 
 class IssueCredentialRequest(BaseModel):
@@ -80,7 +72,6 @@ class IssueCredentialRequest(BaseModel):
     credentialSubject: Dict[str, Union[str, int, float]] = Field(
         example={"name": "Alice"}
     )
-    credentialRequest: dict = Field(None)
     options: IssueCredentialOptions = Field()
 
 
@@ -88,7 +79,7 @@ class BlindCredentialRequest(BaseModel):
     linkSecret: str = Field(
         None, example="5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86"
     )
-    verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    verificationMethod: str = Field(example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP")
 
 
 class MessageGeneratorRequest(BaseModel):
@@ -157,3 +148,16 @@ class CreateCommitmentRequest(BaseModel):
 
     value: str = Field()
     domain: str = Field()
+
+
+class UnblindCredentialOptions(BaseModel):
+    blinder: str = Field(None)
+    linkSecret: str = Field()
+    verificationMethod: str = Field()
+
+
+class UnblindCredentialRequest(BaseModel):
+    """UnblindCredentialRequest model."""
+
+    credential: dict = Field()
+    options: UnblindCredentialOptions = Field()

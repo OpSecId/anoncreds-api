@@ -72,22 +72,22 @@ class ProofRequest(BaseModel):
     verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
     disclosed: List[str] = Field([])
     revocation: bool = Field(True)
-    commitment: List[Commitment] = Field()
+    commitment: List[Commitment] = Field(None)
     # membership: List[Membership]= Field()
-    encryption: List[Encryption] = Field()
+    encryption: List[Encryption] = Field(None)
 
 
 class SignatureQuery(BaseModel):
     type: str = Field("SignatureQuery")
-    refId: str = Field(example="signature-request-for-some-credential")
+    referenceId: str = Field(example="signature-request-for-some-credential")
     disclosed: List[str] = Field([])
     # revocation: bool = Field(True)
-    commitment: List[Commitment] = Field()
-    encryption: List[Encryption] = Field()
+    commitment: List[Commitment] = Field(None)
+    encryption: List[Encryption] = Field(None)
     verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
 
 
 class EqualityQuery(BaseModel):
     type: str = Field("EqualityQuery")
-    refId: str = Field(example="are-names-equal")
+    referenceId: str = Field(example="are-names-equal")
     claims: List[EqualityClaim] = Field()
