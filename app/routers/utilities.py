@@ -10,6 +10,7 @@ from app.models.web_requests import (
     DecryptProofRequest,
     CreateCommitmentRequest,
     UnblindCredentialRequest,
+    CreateScalarRequest,
 )
 from app.plugins import AskarStorage, AnonCredsV2
 from config import settings
@@ -55,9 +56,12 @@ async def membership_registry():
 
 
 @router.post("/scalar")
-async def create_scalar():
+async def create_scalar(request_body: CreateScalarRequest):
+    request_body = request_body.model_dump()
+    value = request_body.get("value")
+
     anoncreds = AnonCredsV2()
-    scalar = anoncreds.create_scalar()
+    scalar = anoncreds.create_scalar(value)
 
     return JSONResponse(
         status_code=200,
@@ -130,24 +134,21 @@ async def create_commitment(request_body: CreateCommitmentRequest):
 @router.post("/unblind")
 async def reveal_blinded_credential(request_body: UnblindCredentialRequest):
     request_body = request_body.model_dump()
-    
-    credential = request_body.get('credential')
-    options = request_body.get('options')
-    
+
+    credential = request_body.get("credential")
+    options = request_body.get("options")
+
     askar = AskarStorage()
-    cred_def = await askar.fetch('resource', options.get('verificationMethod'))
+    cred_def = await askar.fetch("resource", options.get("verificationMethod"))
     if not cred_def:
         raise HTTPException(status_code=404, detail="No credential definition.")
 
-    blind_bundle = {
-        'credential': credential,
-        'issuer': cred_def
-    }
-    blind_claims = {"linkSecret": {"Scalar": {"value": options.get('linkSecret')}}}
-    
+    blind_bundle = {"credential": credential, "issuer": cred_def}
+    blind_claims = {"linkSecret": {"Scalar": {"value": options.get("linkSecret")}}}
+
     anoncreds = AnonCredsV2()
     credential = anoncreds.unblind_credential(
-        blind_bundle, blind_claims, options.get('blinder')
+        blind_bundle, blind_claims, options.get("blinder")
     )
 
     return JSONResponse(

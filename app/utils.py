@@ -1,6 +1,7 @@
 from multiformats import multibase, multihash
 import jcs
 from cbor2 import dumps, loads, load
+from app.plugins.askar import AskarStorage
 
 multibase_encodings = {"bls": "eb01"}
 
@@ -24,8 +25,10 @@ def public_key_multibase(key_hex, key_type):
 def to_encoded_cbor(data):
     return multibase.encode(dumps(data), "base58btc")
 
+
 def from_encoded_cbor(data):
     return loads(multibase.decode(data))
+
 
 def to_cbor(data):
     return dumps(data)
@@ -33,3 +36,19 @@ def to_cbor(data):
 
 def from_cbor(data):
     return loads(data)
+
+
+async def cred_def_id_from_verification_method(verification_method):
+    askar = AskarStorage()
+    issuer_id = verification_method.split("#")[0].split(":")[-1]
+    did_document = await askar.fetch("didDocument", issuer_id)
+    cred_def_id = next(
+        (
+            service.get("id").split("#")[-1]
+            for service in did_document.get("service")
+            if service["verificationMethod"] == verification_method
+        ),
+        None,
+    )
+    # cred_def = await askar.fetch('resource', cred_def_id)
+    return cred_def_id

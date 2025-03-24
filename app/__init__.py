@@ -16,11 +16,12 @@ async def server_status():
     """Server status endpoint."""
     return JSONResponse(status_code=200, content={"status": "ok"})
 
+
 @api_router.get("/issuers/{issuer_id}/did.json", include_in_schema=False)
-async def resolve_issuer_did(issuer_id: str = 'demo'):
+async def resolve_issuer_did(issuer_id: str = "demo"):
     """Server status endpoint."""
     askar = AskarStorage()
-    did_document = await askar.fetch('didDocument', issuer_id)
+    did_document = await askar.fetch("didDocument", issuer_id)
     if not did_document:
         raise HTTPException(status_code=404, detail="No issuer found.")
     return JSONResponse(status_code=200, content=did_document)

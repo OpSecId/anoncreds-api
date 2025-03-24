@@ -3,7 +3,13 @@ import json
 import uuid
 from app.models.claims import ClaimSchema  # , LengthValidator, RangeValidator
 from app.models.schema import CredentialSchema
-from app.utils import digest_multibase, multibase_encode, public_key_multibase, to_encoded_cbor, from_encoded_cbor
+from app.utils import (
+    digest_multibase,
+    multibase_encode,
+    public_key_multibase,
+    to_encoded_cbor,
+    from_encoded_cbor,
+)
 from config import settings
 from bitstring import Array
 from array import array
@@ -52,8 +58,12 @@ class AnonCredsV2:
     #     nonce = self._sanitize_input(nonce)
     #     return self.encode_nonce(nonce)
 
-    def create_scalar(self):
-        scalar = anoncreds_api.create_scalar()
+    def create_scalar(self, value):
+        scalar = (
+            anoncreds_api.derive_scalar(json.dumps(value))
+            if value
+            else anoncreds_api.create_scalar()
+        )
         scalar = self._sanitize_input(scalar)
         return scalar
 
@@ -148,10 +158,10 @@ class AnonCredsV2:
                     if commitment.get("range"):
                         statement = {
                             "claim": indices.index(commitment.get("claimRef")),
-                            "reference_id": statement.get("id"),
+                            "reference_id": statements[-1].get("Commitment").get("id"),
                             "signature_id": query.get("referenceId"),
                             "upper": commitment.get("range").get("upper"),
-                            "lower": commitment.get("range").get("lower")
+                            "lower": commitment.get("range").get("lower"),
                         }
                         statements.append(
                             {"Range": statement | {"id": self._generate_id(statement)}}
@@ -172,15 +182,22 @@ class AnonCredsV2:
                             | {"id": self._generate_id(statement)}
                         }
                     )
-
-            elif query.get("type") == "EqualityQuery":
+        for query in queries:
+            if query.get("type") == "EqualityQuery":
                 statement = {}
                 for claim in query.get("claims"):
-                    claim_ref = indices.index(claim.get("claimRef"))
-                    signature_ref = claim.get("signatureRef")
-                # statements.append({
-                #     'Equality': statement | {'id': self._generate_id(statement)}
-                # })
+                    signature_statement = next((
+                        entry.get('Signature') for entry in statements if (
+                            entry.get('Signature') 
+                            and entry.get('Signature').get('id') == claim.get("signatureRef")
+                        )
+                    ), None)
+                    signature_id = signature_statement.get('id')
+                    claim_ref = signature_statement.get('issuer').get('schema').get('claim_indices').index(claim.get("claimRef"))
+                    statement[signature_id] = claim_ref
+                statements.append({
+                    'Equality': {'ref_id_claim_index': statement} | {'id': self._generate_id(statement)}
+                })
 
         return statements
 
@@ -301,7 +318,7 @@ class AnonCredsV2:
         blind_claims, cred_request, blinder = (
             self._sanitize_input(blind_claims),
             self._sanitize_input(cred_request),
-            self._sanitize_input(blinder)
+            self._sanitize_input(blinder),
         )
         return blind_claims, to_encoded_cbor(cred_request), blinder
 
@@ -418,4 +435,4 @@ class AnonCredsV2:
             json.dumps(credential), json.dumps(cred_def), json.dumps(blinder)
         )
         credential = self._sanitize_input(credential)
-        return credential.get('credential')
+        return credential.get("credential")

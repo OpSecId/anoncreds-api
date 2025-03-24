@@ -63,7 +63,9 @@ class IssueCredentialOptions(BaseModel):
     credentialId: str = Field(None)
     revocationId: str = Field(None)
     requestProof: str = Field(None)
-    verificationMethod: str = Field(example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP")
+    verificationMethod: str = Field(
+        example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP"
+    )
 
 
 class IssueCredentialRequest(BaseModel):
@@ -75,17 +77,38 @@ class IssueCredentialRequest(BaseModel):
     options: IssueCredentialOptions = Field()
 
 
+# class StoreCredentialOptions(BaseModel):
+#     subjectId: str = Field(None)
+#     credentialId: str = Field(None)
+#     verificationMethod: str = Field(
+#         example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP"
+#     )
+
+class StoreCredentialRequest(BaseModel):
+    """StoreCredentialRequest model."""
+
+    credential: dict= Field()
+    # options: IssueCredentialOptions = Field()
+
+
 class BlindCredentialRequest(BaseModel):
-    linkSecret: str = Field(
-        None, example="5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86"
-    )
-    verificationMethod: str = Field(example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP")
+    # linkSecret: str = Field(
+    #     None, example="5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86"
+    # )
+    subjectId: str = Field(example=settings.TEST_VALUES['subject_id'])
+    verificationMethod: str = Field(settings.TEST_VALUES['verification_method'])
 
 
 class MessageGeneratorRequest(BaseModel):
     """MessageGeneratorRequest model."""
 
     domain: str = Field(None)
+
+
+class CreateScalarRequest(BaseModel):
+    """CreateScalarRequest model."""
+
+    value: str = Field(settings.TEST_VALUES['subject_id'])
 
 
 class DecryptProofOption(BaseModel):

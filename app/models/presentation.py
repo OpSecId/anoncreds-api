@@ -12,7 +12,9 @@ class Statement(BaseModel):
 class Signature(BaseModel):
     # type: str =Field("Signature")
     disclosed: List[str] = Field([])
-    verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    verificationMethod: str = Field(
+        example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh"
+    )
 
 
 class Revocation(BaseModel):
@@ -35,8 +37,8 @@ class Commitment(BaseModel):
     # type: str =Field("Commitment")
     # signatureIndex: int = Field(0)
     claimRef: str = Field(example="name")
-    messageGenerator: str = Field()
-    blinderGenerator: str = Field()
+    messageGenerator: str = Field(example='b24afdfc8024352057aa8f470804834925195dd8a1f7eada04697443ba53b2932be41ba53f9af0714b2eb33b3dc81e22')
+    blinderGenerator: str = Field(example='b4053ab8abc7933b0c63bd8aa9965fc31250fabbcc471637603f2a75a35562d635b5d934848c6a5fe712aeb64d5a948d')
     range: Range = Field(None)
 
 
@@ -53,12 +55,14 @@ class Membership(BaseModel):
     # signatureIndex: int = Field(0)
     claimRef: str = Field()
     accumulator: str = Field()
-    verificationKey: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    verificationKey: str = Field(
+        example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh"
+    )
 
 
 class EqualityClaim(BaseModel):
     claimRef: str = Field(example="name")
-    signatureRef: int = Field(example=0)
+    signatureRef: str = Field(example="signature-request-for-some-credential")
 
 
 class Equality(BaseModel):
@@ -69,7 +73,9 @@ class Equality(BaseModel):
 class ProofRequest(BaseModel):
     # type: str =Field("Equality")
     label: str = Field(example="Signature request 123")
-    verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    verificationMethod: str = Field(
+        example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh"
+    )
     disclosed: List[str] = Field([])
     revocation: bool = Field(True)
     commitment: List[Commitment] = Field(None)
@@ -84,7 +90,9 @@ class SignatureQuery(BaseModel):
     # revocation: bool = Field(True)
     commitment: List[Commitment] = Field(None)
     encryption: List[Encryption] = Field(None)
-    verificationMethod: str = Field(example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh")
+    verificationMethod: str = Field(
+        example="zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh"
+    )
 
 
 class EqualityQuery(BaseModel):

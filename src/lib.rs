@@ -208,6 +208,7 @@ fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(msg_generator, m)?)?;
     m.add_function(wrap_pyfunction!(domain_proof_generator, m)?)?;
     m.add_function(wrap_pyfunction!(create_scalar, m)?)?;
+    m.add_function(wrap_pyfunction!(derive_scalar, m)?)?;
     m.add_function(wrap_pyfunction!(membership_registry, m)?)?;
     m.add_function(wrap_pyfunction!(create_commitment, m)?)?;
     m.add_function(wrap_pyfunction!(check_domain_commitment, m)?)?;

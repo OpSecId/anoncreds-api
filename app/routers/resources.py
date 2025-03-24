@@ -36,16 +36,10 @@ async def new_cred_schema(request_body: NewCredSchema):
     if not await askar.fetch("resource", schema.get("id")):
         await askar.store("resource", schema.get("id"), schema)
 
-        return JSONResponse(
-            status_code=201,
-            content={
-                "schema": schema,
-            },
-        )
     return JSONResponse(
-        status_code=200,
+        status_code=201,
         content={
-            "credentialSchema": schema,
+            "credentialSchemaId": schema.get('id'),
         },
     )
 
@@ -59,10 +53,11 @@ async def new_pres_schema(request_body: NewPresSchema):
 
     askar = AskarStorage()
     for query in queries:
-        print(query)
         if query.get("type") == "SignatureQuery":
+            verification_method = query.pop("verificationMethod")
+            verification_method = verification_method.split('#')[-1]
             query["issuer"] = await askar.fetch(
-                "resource", query.pop("verificationMethod")
+                "resource", verification_method
             )
             if not query.get("issuer"):
                 raise HTTPException(status_code=404, detail="No issuer found.")
@@ -77,41 +72,45 @@ async def new_pres_schema(request_body: NewPresSchema):
     return JSONResponse(
         status_code=201,
         content={
-            "presentationSchema": pres_schema,
+            "presentationSchemaId": pres_schema.get('id'),
         },
     )
 
 
 @router.get("/issuers/{issuer_id}")
-async def get_issuer_did_document(issuer_id: str = 'demo'):
+async def get_issuer_did_document(issuer_id: str = "demo"):
     """Server status endpoint."""
     askar = AskarStorage()
-    did_document = await askar.fetch('didDocument', issuer_id)
+    did_document = await askar.fetch("didDocument", issuer_id)
     if not did_document:
         raise HTTPException(status_code=404, detail="No issuer found.")
-    return JSONResponse(status_code=200, content={'didDocument', did_document})
+    return JSONResponse(status_code=200, content={"didDocument": did_document})
 
 
 @router.post("/issuers/{issuer_id}")
-async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer_id: str = 'demo'):
+async def setup_new_verification_method(
+    request_body: SetupIssuerRequest, issuer_id: str = "demo"
+):
     request_body = request_body.model_dump()
-    
+
     askar = AskarStorage()
-    did = f'did:web:{settings.DOMAIN}:issuers:{issuer_id}'
-    did_document = await askar.fetch('didDocument', issuer_id)
+    did = f"did:web:{settings.DOMAIN}:issuers:{issuer_id}"
+    did_document = await askar.fetch("didDocument", issuer_id)
     if not did_document:
         did_document = {
-            '@context': [
-                'https://www.w3.org/ns/did/v1',
-                'https://w3id.org/security/multikey/v1',
-                {'AnonCredsRegistry': 'https://www.w3.org/ns/credentials/undefined-term#AnonCredsRegistry'}
+            "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/multikey/v1",
+                {
+                    "credentialRegistry": "https://www.w3.org/ns/credentials/undefined-term#credentialRegistry"
+                },
             ],
-            'id': did,
-            'verificationMethod': [],
-            'service': [],
+            "id": did,
+            "verificationMethod": [],
+            # "service": [],
         }
-        await askar.store('didDocument', issuer_id, did_document)
-        
+        await askar.store("didDocument", issuer_id, did_document)
+
     cred_schema_id = request_body.get("credSchemaId")
 
     askar = AskarStorage()
@@ -131,21 +130,17 @@ async def setup_new_verification_method(request_body: SetupIssuerRequest, issuer
     public_key_multi = public_key_multibase(
         issuer_pub.get("verifying_key").get("w"), "bls"
     )
-    verification_method = f'{did}#{len(did_document["verificationMethod"])}'
-    did_document['verificationMethod'].append({
-        'type': 'Multikey',
-        'id': verification_method,
-        'controller': did,
-        'publicKeyMultibase': public_key_multi
-    })
-    did_document['service'].append({
-        'type': 'AnonCredsRegistry',
-        'id': f'{did}#{issuer_pub.get("id")}',
-        'serviceEndpoint': f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}',
-        'verificationMethod': verification_method
-    })
+    verification_method = f'{did}#{issuer_pub.get("id")}'
+    did_document["verificationMethod"].append(
+        {
+            "type": "Multikey",
+            "id": verification_method,
+            "controller": did,
+            "publicKeyMultibase": public_key_multi,
+            "credentialRegistry": f'https://{settings.DOMAIN}/resources/{issuer_pub.get("id")}',
+        }
+    )
     await askar.update("didDocument", issuer_id, did_document)
 
-    return JSONResponse(
-        status_code=201, content={"didDocument": did_document}
-    )
+    return JSONResponse(status_code=201, content={"verificationMethod": verification_method})
+    # return JSONResponse(status_code=201, content={"didDocument": did_document})

@@ -25,7 +25,6 @@ class Property(BaseModel):
 class JsonSchema(BaseModel):
     """JsonSchema model."""
 
-    type: str = Field("object")
     title: str = Field()
     description: str = Field()
     properties: Dict[str, Property] = Field()
@@ -34,7 +33,6 @@ class JsonSchema(BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "type": "object",
                     "title": "Sample Credential",
                     "description": "A sample credential",
                     "properties": {"name": {"type": "string"}},
