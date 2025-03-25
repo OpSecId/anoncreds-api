@@ -116,11 +116,17 @@ class AnonCredsApi:
 
         # Decrypt Proof
         shoes_demo_proofs = shoes_demo_presentation.get('proofs')
-        print(shoes_demo_proofs)
         for proof_id in shoes_demo_proofs:
             proof = shoes_demo_proofs.get(proof_id)
             if proof.get('VerifiableEncryption'):
-                shoes_demo_ve_proof = proof.get('VerifiableEncryption')
+                if proof.get('VerifiableEncryption').get('id') == 'cc-number-encryption':
+                    shoes_demo_cc_encryption_proof = proof.get('VerifiableEncryption')
+                    # decrypted = self.decrypt_proof(shoes_demo_cc_encryption_proof, decryption_key).get('decrypted')
+                elif proof.get('VerifiableEncryption').get('id') == 'rebates-clientNo-encryption':
+                    shoes_demo_rebates_encryption_proof = proof.get('VerifiableEncryption')
+                    decryption_key = shorts_demo.get('verifier').get('decryptionKey')
+                    decrypted = self.decrypt_proof(shoes_demo_rebates_encryption_proof, decryption_key).get('decrypted')
+                    print(decrypted)
 
         # # Decrypt Proof
         # shorts_demo_proofs = shorts_demo_presentation.get('proofs')
@@ -241,6 +247,13 @@ class AnonCredsApi:
         r = requests.post(
             f"{self.endpoint}/utilities/decrypt",
             json={"proof": proof, "options": {"decryptionKey": decryption_key}},
+        )
+        return r.json()
+
+    def decrypt_proof_issuer(self, proof, issuer_label, verification_method):
+        r = requests.post(
+            f"{self.endpoint}/issuers/{issuer_label}/credentials/{verification_method.split("#")[-1]}/decrypt",
+            json={"proof": proof},
         )
         return r.json()
 

@@ -3,7 +3,8 @@ from fastapi.responses import JSONResponse
 from app.plugins import AskarStorage, AnonCredsV2
 from app.models.web_requests import (
     SetupIssuerRequest,
-    IssueCredentialRequest
+    IssueCredentialRequest,
+    IssuerDecryptProofRequest
 )
 from config import settings
 from app.utils import public_key_multibase
@@ -157,6 +158,25 @@ async def issue_credential(request_body: IssueCredentialRequest):
 
     return JSONResponse(status_code=201, content={"credential": credential})
     # return JSONResponse(status_code=201, content={'credential': credential})
+
+
+@router.post("/issuers/{issuer_id}/credentials/{cred_def_id}/decrypt", tags=["Issuers"])
+async def decrypt_issuer_encrypted_proof(issuer_id: str, cred_def_id: str, request_body: IssuerDecryptProofRequest):
+    request_body = request_body.model_dump()
+
+    proof = request_body.get("proof")
+    cred_def_secret = await askar.fetch("secret", cred_def_id)
+    if not cred_def_secret:
+        raise HTTPException(status_code=404, detail="No issuer found.")
+
+    decrypted_proof = anoncreds.decrypt_proof(proof, cred_def_secret.get("verifiable_decryption_key"))
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "decrypted": decrypted_proof,
+        },
+    )
 
 
 

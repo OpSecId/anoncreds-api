@@ -185,3 +185,9 @@ class UnblindCredentialRequest(BaseModel):
 
     credential: dict = Field()
     options: UnblindCredentialOptions = Field()
+
+
+class IssuerDecryptProofRequest(BaseModel):
+    """IssuerDecryptProofRequest model."""
+
+    proof: dict = Field()
