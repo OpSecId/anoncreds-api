@@ -219,10 +219,10 @@ class AnonCredsV2:
         claim_indices.append("credentialId")
         claims.append(ClaimSchema(claim_type="Revocation", label="credentialId"))
 
-        # if options.get("linkSecret"):
-        #     claim_indices.append("linkSecret")
-        #     blind_claims.append("linkSecret")
-        #     claims.append(ClaimSchema(claim_type="Scalar", label="linkSecret"))
+        if options.get("linkSecret"):
+            claim_indices.append("linkSecret")
+            blind_claims.append("linkSecret")
+            claims.append(ClaimSchema(claim_type="Scalar", label="linkSecret"))
 
         properties = json_schema.get("properties")
         for property in properties:

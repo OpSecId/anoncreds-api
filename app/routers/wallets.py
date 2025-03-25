@@ -30,7 +30,7 @@ async def delete_wallet_content(holder_id: str):
 
 
 @router.post("/wallets/{holder_id}/requests", tags=["Wallets"])
-async def request_credential(request_body: BlindCredentialRequest):
+async def request_credential(holder_id: str, request_body: BlindCredentialRequest):
     """"""
     request_body = request_body.model_dump()
 
@@ -40,7 +40,7 @@ async def request_credential(request_body: BlindCredentialRequest):
     if not cred_def:
         raise HTTPException(status_code=404, detail="No credential definition.")
 
-    link_secret = anoncreds.create_scalar(request_body.get("subjectId"))
+    link_secret = anoncreds.create_scalar(holder_id)
 
     blind_claims, cred_request, blinder = anoncreds.credential_request(
         cred_def, {"linkSecret": {"Scalar": {"value": link_secret}}}
@@ -50,7 +50,7 @@ async def request_credential(request_body: BlindCredentialRequest):
         status_code=201,
         content={
             "blinder": blinder,
-            # "blindClaims": blind_claims,
+            "blindClaims": blind_claims,
             "requestProof": cred_request,
         },
     )
