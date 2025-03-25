@@ -1,8 +1,7 @@
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
-from app.routers import resources, utilities, vc_api, operations
-from app.plugins import AskarStorage
+from app.routers import schemas, issuers, wallets, utilities, vc_api, verifiers
 
 from config import settings
 
@@ -17,18 +16,10 @@ async def server_status():
     return JSONResponse(status_code=200, content={"status": "ok"})
 
 
-@api_router.get("/issuers/{issuer_id}/did.json", include_in_schema=False)
-async def resolve_issuer_did(issuer_id: str = "demo"):
-    """Server status endpoint."""
-    askar = AskarStorage()
-    did_document = await askar.fetch("didDocument", issuer_id)
-    if not did_document:
-        raise HTTPException(status_code=404, detail="No issuer found.")
-    return JSONResponse(status_code=200, content=did_document)
-
-
-api_router.include_router(resources.router, prefix="/resources")
-api_router.include_router(operations.router, prefix="/operations")
+api_router.include_router(schemas.router)
+api_router.include_router(issuers.router)
+api_router.include_router(wallets.router)
+api_router.include_router(verifiers.router)
 # api_router.include_router(vc_api.router)
 api_router.include_router(utilities.router, prefix="/utilities")
 

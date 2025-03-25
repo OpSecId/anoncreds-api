@@ -16,6 +16,7 @@ def digest_multibase(value):
 def multibase_encode(value):
     return multibase.encode(jcs.canonicalize(value), "base58btc")
 
+
 def multibase_decode(value):
     return json.loads(multibase.decode(value))
 

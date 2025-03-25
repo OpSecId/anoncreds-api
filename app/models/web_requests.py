@@ -78,15 +78,18 @@ class IssueCredentialRequest(BaseModel):
 
 
 class StoreCredentialOptions(BaseModel):
-    blinder: str = Field('0000000000000000000000000000000000000000000000000000000000000000')
+    blinder: str = Field(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    )
     verificationMethod: str = Field(
         example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP"
     )
 
+
 class StoreCredentialRequest(BaseModel):
     """StoreCredentialRequest model."""
 
-    credential: dict= Field()
+    credential: dict = Field()
     options: StoreCredentialOptions = Field()
 
 
@@ -94,8 +97,8 @@ class BlindCredentialRequest(BaseModel):
     # linkSecret: str = Field(
     #     None, example="5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86"
     # )
-    subjectId: str = Field(example=settings.TEST_VALUES['subject_id'])
-    verificationMethod: str = Field(settings.TEST_VALUES['verification_method'])
+    subjectId: str = Field(example=settings.TEST_VALUES["subject_id"])
+    verificationMethod: str = Field(settings.TEST_VALUES["verification_method"])
 
 
 class MessageGeneratorRequest(BaseModel):
@@ -107,7 +110,7 @@ class MessageGeneratorRequest(BaseModel):
 class CreateScalarRequest(BaseModel):
     """CreateScalarRequest model."""
 
-    value: str = Field(settings.TEST_VALUES['subject_id'])
+    value: str = Field(settings.TEST_VALUES["subject_id"])
 
 
 class DecryptProofOption(BaseModel):
@@ -139,9 +142,9 @@ class VerifyPresentationRequest(BaseModel):
 
 class CreatePresentationOption(BaseModel):
     """CreatePresentationOption model."""
+
     challenge: str = Field(None)
     presSchemaId: str = Field()
-
 
 
 class CreatePresentationRequest(BaseModel):
@@ -174,7 +177,9 @@ class CreateCommitmentRequest(BaseModel):
 
 
 class UnblindCredentialOptions(BaseModel):
-    blinder: str = Field('0000000000000000000000000000000000000000000000000000000000000000')
+    blinder: str = Field(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    )
     linkSecret: str = Field()
     verificationMethod: str = Field()
 

@@ -70,8 +70,8 @@ class AnonCredsV2:
     def create_keypair(self):
         encryption_key, decryption_key = anoncreds_api.new_keys()
         return (
-            self._sanitize_input(encryption_key), 
-            self._sanitize_input(decryption_key)
+            self._sanitize_input(encryption_key),
+            self._sanitize_input(decryption_key),
         )
 
     def membership_registry(self):
@@ -84,24 +84,25 @@ class AnonCredsV2:
 
     def message_generator(self, domain=None):
         generator = (
-            anoncreds_api.domain_proof_generator(domain.encode()) 
-            if domain else anoncreds_api.msg_generator()
+            anoncreds_api.domain_proof_generator(domain.encode())
+            if domain
+            else anoncreds_api.msg_generator()
         )
         return self._sanitize_input(generator)
 
     def map_claims(self, cred_def, credential_subject, cred_id):
         claims_data = []
         for claim in cred_def.get("schema").get("claims"):
-            
+
             claim_label = claim.get("label")
             claim_value = credential_subject.get(claim_label)
-            
+
             if claim.get("claim_type") == "Revocation":
                 claims_data.append({"Revocation": {"value": cred_id}})
-                
+
             elif isinstance(claim_value, str) and isinstance(claim_value, int):
                 continue
-            
+
             elif credential_subject.get(claim_label):
                 claims_data.append(
                     {
@@ -111,13 +112,13 @@ class AnonCredsV2:
                         }
                     }
                 )
-                
+
         return claims_data
 
     def map_pres_schema(self, queries, challenge):
         statements = []
         for query in queries:
-            
+
             if query.get("type") == "SignatureQuery":
                 issuer = query.get("issuer")
                 cred_schema = issuer.get("schema")
@@ -181,18 +182,32 @@ class AnonCredsV2:
             if query.get("type") == "EqualityQuery":
                 statement = {}
                 for claim in query.get("claims"):
-                    signature_statement = next((
-                        entry.get('Signature') for entry in statements if (
-                            entry.get('Signature') 
-                            and entry.get('Signature').get('id') == claim.get("signatureRef")
-                        )
-                    ), None)
-                    signature_id = signature_statement.get('id')
-                    claim_ref = signature_statement.get('issuer').get('schema').get('claim_indices').index(claim.get("claimRef"))
+                    signature_statement = next(
+                        (
+                            entry.get("Signature")
+                            for entry in statements
+                            if (
+                                entry.get("Signature")
+                                and entry.get("Signature").get("id")
+                                == claim.get("signatureRef")
+                            )
+                        ),
+                        None,
+                    )
+                    signature_id = signature_statement.get("id")
+                    claim_ref = (
+                        signature_statement.get("issuer")
+                        .get("schema")
+                        .get("claim_indices")
+                        .index(claim.get("claimRef"))
+                    )
                     statement[signature_id] = claim_ref
-                statements.append({
-                    'Equality': {'ref_id_claim_index': statement} | {'id': self._generate_id(statement)}
-                })
+                statements.append(
+                    {
+                        "Equality": {"ref_id_claim_index": statement}
+                        | {"id": self._generate_id(statement)}
+                    }
+                )
 
         return statements
 
@@ -328,7 +343,7 @@ class AnonCredsV2:
             "type": "VerifiableCredential",
             # "name": schema.get("label"),
             # "description": schema.get("description"),
-            "issuer": issuer.get('issuer_did'),
+            "issuer": issuer.get("issuer_did"),
             # "issuer": {"id": issuer.get('issuer_did')},
             # "credentialSchema": [{"type": "AnonCredsDefinition", "id": schema_endpoint}],
             # "credentialStatus": [],
@@ -338,30 +353,30 @@ class AnonCredsV2:
                 "cryptosuite": "anoncreds-bbs-2025",
                 "proofPurpose": "assertionMethod",
                 "proofValue": multibase_encode(credential_input.get("signature")),
-                "verificationMethod": issuer.get('issuer_did') + "#" + issuer.get("id"),
+                "verificationMethod": issuer.get("issuer_did") + "#" + issuer.get("id"),
             },
         }
-        
+
         # credential
-        if credential_input.get('revocation_index'):
-            rev_id = credential_input['claims'][0]['Revocation']['value']
+        if credential_input.get("revocation_index"):
+            rev_id = credential_input["claims"][0]["Revocation"]["value"]
             rev_idx = 0
         # blind bundle
-        elif credential_input.get('revocation_label'):
-            rev_label = credential_input.get('revocation_label')
-            rev_id = credential_input['claims'][rev_label]['Revocation']['value']
-            rev_idx = issuer['schema']['claim_indices'].index(rev_label)
-        
+        elif credential_input.get("revocation_label"):
+            rev_label = credential_input.get("revocation_label")
+            rev_id = credential_input["claims"][rev_label]["Revocation"]["value"]
+            rev_idx = issuer["schema"]["claim_indices"].index(rev_label)
+
         # credential['id'] = f'urn:uuid:{rev_id}'
-        credential['credentialStatus'] = {
+        credential["credentialStatus"] = {
             "type": "RevocationClaim",
             "revocationId": rev_id,
             "revocationIndex": rev_idx,
-            "revocationHandle": credential_input.get("revocation_handle")
+            "revocationHandle": credential_input.get("revocation_handle"),
         }
-        
+
         # credential
-        if credential_input.get('revocation_index'):
+        if credential_input.get("revocation_index"):
             for idx, claim in enumerate(credential_input.get("claims")):
                 claim_label = schema["claim_indices"][idx]
                 if claim.get("Revocation"):
@@ -369,17 +384,19 @@ class AnonCredsV2:
                 elif claim.get("Scalar"):
                     continue
                 elif claim.get("Number"):
-                    credential["credentialSubject"][claim_label] = (
-                        claim.get("Number").get("value")
-                    )
+                    credential["credentialSubject"][claim_label] = claim.get(
+                        "Number"
+                    ).get("value")
                 elif claim.get("Hashed"):
-                    credential["credentialSubject"][claim_label] = (
-                        claim.get("Hashed").get("value")
-                    )
+                    credential["credentialSubject"][claim_label] = claim.get(
+                        "Hashed"
+                    ).get("value")
         # blind bundle
-        elif credential_input.get('revocation_label'):
-            for idx, claim_label in enumerate(issuer.get('schema').get('claim_indices')):
-                claim = credential_input.get('claims').get(claim_label)
+        elif credential_input.get("revocation_label"):
+            for idx, claim_label in enumerate(
+                issuer.get("schema").get("claim_indices")
+            ):
+                claim = credential_input.get("claims").get(claim_label)
                 if not claim:
                     continue
                 elif claim.get("Revocation"):
@@ -387,21 +404,21 @@ class AnonCredsV2:
                 elif claim.get("Scalar"):
                     continue
                 elif claim.get("Number"):
-                    credential["credentialSubject"][claim_label] = (
-                        claim.get("Number").get("value")
-                    )
+                    credential["credentialSubject"][claim_label] = claim.get(
+                        "Number"
+                    ).get("value")
                 elif claim.get("Hashed"):
-                    credential["credentialSubject"][claim_label] = (
-                        claim.get("Hashed").get("value")
-                    )
+                    credential["credentialSubject"][claim_label] = claim.get(
+                        "Hashed"
+                    ).get("value")
         return credential
 
     def w3c_to_cred(self, cred_def, credential):
-        subject = credential.get('credentialSubject')
-        status = credential.get('credentialStatus')
-        signature = credential.get('proof').get('proofValue')
-        
-        claim_indices = cred_def.get('schema').get('claim_indices')
+        subject = credential.get("credentialSubject")
+        status = credential.get("credentialStatus")
+        signature = credential.get("proof").get("proofValue")
+
+        claim_indices = cred_def.get("schema").get("claim_indices")
         # blind_claims = {
         #     'linkSecret': {
         #         'Scalar': {
@@ -410,26 +427,20 @@ class AnonCredsV2:
         #     }
         # }
         claims = {
-            claim_indices[0]: {
-                'Revocation': {
-                    'value': status.get('revocationId')
-                }
-            }
+            claim_indices[0]: {"Revocation": {"value": status.get("revocationId")}}
         }
         for key, value in subject.items():
             if not isinstance(value, str) and not isinstance(value, int):
                 continue
             claims[key] = {
-                'Hashed' if isinstance(value, str) else 'Number': {
-                    'value': value
-                }
+                "Hashed" if isinstance(value, str) else "Number": {"value": value}
             }
         cred_bundle = {
-            'claims': claims,
-            'signature': multibase_decode(signature),
-            'revocation_handle': status.get('revocationHandle'),
-            'revocation_label': claim_indices[0],
-            'issuer': cred_def
+            "claims": claims,
+            "signature": multibase_decode(signature),
+            "revocation_handle": status.get("revocationHandle"),
+            "revocation_label": claim_indices[0],
+            "issuer": cred_def,
         }
         # credential = self.unblind_credential(cred_bundle, blind_claims, settings.BBS_BLINDER)
         return cred_bundle
@@ -500,10 +511,4 @@ class AnonCredsV2:
 
     def create_blind_claim(self, value):
         scalar = anoncreds_api.derive_scalar(json.dumps(value))
-        return {
-            'linkSecret': {
-                'Scalar': {
-                    'value': self._sanitize_input(scalar)
-                }
-            }
-        }
+        return {"linkSecret": {"Scalar": {"value": self._sanitize_input(scalar)}}}

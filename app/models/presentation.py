@@ -37,8 +37,12 @@ class Commitment(BaseModel):
     # type: str =Field("Commitment")
     # signatureIndex: int = Field(0)
     claimRef: str = Field(example="name")
-    messageGenerator: str = Field(example='b24afdfc8024352057aa8f470804834925195dd8a1f7eada04697443ba53b2932be41ba53f9af0714b2eb33b3dc81e22')
-    blinderGenerator: str = Field(example='b4053ab8abc7933b0c63bd8aa9965fc31250fabbcc471637603f2a75a35562d635b5d934848c6a5fe712aeb64d5a948d')
+    messageGenerator: str = Field(
+        example="b24afdfc8024352057aa8f470804834925195dd8a1f7eada04697443ba53b2932be41ba53f9af0714b2eb33b3dc81e22"
+    )
+    blinderGenerator: str = Field(
+        example="b4053ab8abc7933b0c63bd8aa9965fc31250fabbcc471637603f2a75a35562d635b5d934848c6a5fe712aeb64d5a948d"
+    )
     range: Range = Field(None)
 
 

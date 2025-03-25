@@ -33,17 +33,19 @@ class AnonCredsApi:
         # cc_issuer = self.setup_issuer(cc_schema_id)
         # cc_cred_def = cc_issuer.get("public")
 
-        cc_verification_method = cc_demo.get("issuer").get('verificationMethod')
+        cc_verification_method = cc_demo.get("issuer").get("verificationMethod")
         cc_cred_subject = cc_demo.get("credential").get("credentialSubject")
-        cc_request_proof = self.request_credential(holder_id, cc_verification_method).get('requestProof')
+        cc_request_proof = self.request_credential(
+            holder_id, cc_verification_method
+        ).get("requestProof")
         cc_credential = self.issue_credential(
             cred_id=str(uuid.uuid4()),
             rev_id=str(uuid.uuid4()),
             cred_subject=cc_cred_subject,
             request_proof=cc_request_proof,
-            verification_method=cc_verification_method, 
+            verification_method=cc_verification_method,
         )
-        
+
         with open("app/static/demo/credentials/rebates-card.json", "r") as f:
             rc_demo = json.loads(f.read())
 
@@ -51,27 +53,29 @@ class AnonCredsApi:
         # rc_issuer = self.setup_issuer(rc_schema.get("id"))
         # rc_cred_def = rc_issuer.get("public")
 
-        rc_verification_method = rc_demo.get("issuer").get('verificationMethod')
+        rc_verification_method = rc_demo.get("issuer").get("verificationMethod")
         rc_cred_subject = rc_demo.get("credential").get("credentialSubject")
         rc_cred_subject["clientNo"] = zalgo_id(64)
-        rc_request_proof = self.request_credential(holder_id, rc_verification_method).get('requestProof')
+        rc_request_proof = self.request_credential(
+            holder_id, rc_verification_method
+        ).get("requestProof")
         rc_credential = self.issue_credential(
             cred_id=str(uuid.uuid4()),
             rev_id=str(uuid.uuid4()),
             cred_subject=rc_cred_subject,
             request_proof=rc_request_proof,
-            verification_method=rc_verification_method, 
+            verification_method=rc_verification_method,
         )
 
         with open("app/static/demo/presentations/shoes-purchase.json", "r") as f:
             shoes_demo = json.loads(f.read())
 
-        shoes_pres_schema_id = self.create_pres_schema(shoes_demo.get('query'))
+        shoes_pres_schema_id = self.create_pres_schema(shoes_demo.get("query"))
 
         with open("app/static/demo/presentations/shorts-purchase.json", "r") as f:
             shorts_demo = json.loads(f.read())
 
-        shorts_pres_schema_id = self.create_pres_schema(shorts_demo.get('query'))
+        shorts_pres_schema_id = self.create_pres_schema(shorts_demo.get("query"))
         # challenge = self.create_nonce().get("nonce")
         # cc_presentation = self.create_presentation(
         #     cc_credential, cc_pres_schema.get("id"), challenge
@@ -148,7 +152,8 @@ class AnonCredsApi:
 
     def setup_issuer(self, issuer_name, schema_id):
         r = requests.post(
-            f"{self.endpoint}/resources/issuers/{issuer_name}", json={"options": {"credSchemaId": schema_id}}
+            f"{self.endpoint}/resources/issuers/{issuer_name}",
+            json={"options": {"credSchemaId": schema_id}},
         )
         return r.json()
 
@@ -169,7 +174,9 @@ class AnonCredsApi:
         )
         return r.json()
 
-    def issue_credential(self, cred_subject, cred_id, rev_id, verification_method, request_proof=None):
+    def issue_credential(
+        self, cred_subject, cred_id, rev_id, verification_method, request_proof=None
+    ):
         r = requests.post(
             f"{self.endpoint}/operations/credentials/issuance",
             json={
@@ -178,7 +185,7 @@ class AnonCredsApi:
                     "credentialId": cred_id,
                     "revocationId": rev_id,
                     "requestProof": request_proof,
-                    "verificationMethod": verification_method
+                    "verificationMethod": verification_method,
                 },
             },
         )
