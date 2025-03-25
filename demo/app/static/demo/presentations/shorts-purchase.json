@@ -9,13 +9,16 @@
         {
             "type": "SignatureQuery",
             "referenceId": "cc-request",
+            "revRefId": "cc-revocation",
             "disclosed": ["cardType"],
             "commitment": [
                 {
                     "claimRef": "expiryDateInt",
+                    "referenceId": "cc-expiry-commitment",
                     "messageGenerator": "b9aa9e6c7c0f23f9570190ac581536fad87b483d383110dd18000d892db80f97cc7ffe6e851ac5b81508028dc7451810",
                     "blinderGenerator": "aa938acdf0da2373c8ccd71181964a18f88a921cbf4ba5e9581e1c24635de138fa34072b7b05a52a47974b9582953835",
                     "range": {
+                        "referenceId": "cc-expiry-range",
                         "lower": 20250324
                     }
                 }
@@ -23,6 +26,7 @@
             "encryption": [
                 {
                     "claimRef": "number",
+                    "referenceId": "cc-number-encryption",
                     "domain": "neovault.bank.example",
                     "encryptionKey": "b8a82f88709209c583eec85dcc29f633e6aeefced512245f6e1430d16d8c30bf8d4f264b0c210f2d1c5a1f0c74934e79"
                 }
@@ -32,13 +36,16 @@
         {
             "type": "SignatureQuery",
             "referenceId": "rebates-request",
+            "revRefId": "rebates-revocation",
             "disclosed": ["tier"],
             "commitment": [
                 {
                     "claimRef": "memberSince",
+                    "referenceId": "rebates-expiry-commitment",
                     "messageGenerator": "b9aa9e6c7c0f23f9570190ac581536fad87b483d383110dd18000d892db80f97cc7ffe6e851ac5b81508028dc7451810",
                     "blinderGenerator": "aa938acdf0da2373c8ccd71181964a18f88a921cbf4ba5e9581e1c24635de138fa34072b7b05a52a47974b9582953835",
                     "range": {
+                        "referenceId": "rebates-expiry-range",
                         "upper": 20240324
                     }
                 }
@@ -46,6 +53,7 @@
             "encryption": [
                 {
                     "claimRef": "clientNo",
+                    "referenceId": "rebates-clientNo-encryption",
                     "domain": "threadly.store.example",
                     "encryptionKey": "909df14b097de0255201d5178f4be1d2875c32ba765e223d8df63676c0186a002480be6f4f6c8a0592dc224dfe9600d7"
                 }

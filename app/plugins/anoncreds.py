@@ -139,7 +139,7 @@ class AnonCredsV2:
                     "verification_key": issuer.get("revocation_verifying_key"),
                 }
                 statements.append(
-                    {"Revocation": statement | {"id": self._generate_id(statement)}}
+                    {"Revocation": statement | {"id": query.get("revRefId") or self._generate_id(statement)}}
                 )
                 for commitment in query.get("commitment", []):
                     statement = {

@@ -37,6 +37,8 @@ def create_app(config_class=Config):
 
     @app.route("/")
     def index():
+        print(session["demo"])
+        print(session["credentials"])
         print(session["presentations"])
         return render_template(
             "pages/index.jinja", title=session["title"], demo=session["demo"]

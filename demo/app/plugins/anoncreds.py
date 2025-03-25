@@ -91,7 +91,18 @@ class AnonCredsApi:
         shoes_demo_verified = self.verify_presentation(
             shoes_demo_presentation, shoes_pres_schema_id, shoes_demo_challenge
         )
-        print(shoes_demo_verified)
+        shoes_demo_proofs = shoes_demo_presentation.get('proofs')
+        for proof_id in shoes_demo_proofs:
+            proof = shoes_demo_proofs.get(proof_id)
+            if proof.get('VerifiableEncryption'):
+                if proof.get('VerifiableEncryption').get('id') == 'cc-number-encryption':
+                    shoes_demo_cc_encryption_proof = proof.get('VerifiableEncryption')
+                    shoes_demo_decrypted_cc = self.decrypt_proof_issuer(shoes_demo_cc_encryption_proof, cc_issuer_label, cc_verification_method).get('decrypted')
+     
+                elif proof.get('VerifiableEncryption').get('id') == 'rebates-clientNo-encryption':
+                    shoes_demo_rebates_encryption_proof = proof.get('VerifiableEncryption')
+                    shoes_demo_decryption_key = shoes_demo.get('verifier').get('decryptionKey')
+                    shoes_demo_decrypted_rebates = self.decrypt_proof(shoes_demo_rebates_encryption_proof, shoes_demo_decryption_key).get('decrypted')
 
         with open("app/static/demo/presentations/shorts-purchase.json", "r") as f:
             shorts_demo = json.loads(f.read())
@@ -111,58 +122,44 @@ class AnonCredsApi:
         shorts_demo_verified = self.verify_presentation(
             shorts_demo_presentation, shorts_pres_schema_id, shorts_demo_challenge
         )
-        
-        print(shorts_demo_verified)
-
-        # Decrypt Proof
-        shoes_demo_proofs = shoes_demo_presentation.get('proofs')
-        for proof_id in shoes_demo_proofs:
-            proof = shoes_demo_proofs.get(proof_id)
+        shorts_demo_proofs = shorts_demo_presentation.get('proofs')
+        for proof_id in shorts_demo_proofs:
+            proof = shorts_demo_proofs.get(proof_id)
             if proof.get('VerifiableEncryption'):
                 if proof.get('VerifiableEncryption').get('id') == 'cc-number-encryption':
-                    shoes_demo_cc_encryption_proof = proof.get('VerifiableEncryption')
-                    # decrypted = self.decrypt_proof(shoes_demo_cc_encryption_proof, decryption_key).get('decrypted')
+                    shorts_demo_cc_encryption_proof = proof.get('VerifiableEncryption')
+                    shorts_demo_decrypted_cc = self.decrypt_proof_issuer(shorts_demo_cc_encryption_proof, cc_issuer_label, cc_verification_method).get('decrypted')
+     
                 elif proof.get('VerifiableEncryption').get('id') == 'rebates-clientNo-encryption':
-                    shoes_demo_rebates_encryption_proof = proof.get('VerifiableEncryption')
-                    decryption_key = shorts_demo.get('verifier').get('decryptionKey')
-                    decrypted = self.decrypt_proof(shoes_demo_rebates_encryption_proof, decryption_key).get('decrypted')
-                    print(decrypted)
+                    shorts_demo_rebates_encryption_proof = proof.get('VerifiableEncryption')
+                    shorts_demo_decryption_key = shorts_demo.get('verifier').get('decryptionKey')
+                    shorts_demo_decrypted_rebates = self.decrypt_proof(shorts_demo_rebates_encryption_proof, shorts_demo_decryption_key).get('decrypted')
+        
 
-        # # Decrypt Proof
-        # shorts_demo_proofs = shorts_demo_presentation.get('proofs')
-        # for proof_id in shorts_demo_proofs:
-        #     proof = shorts_demo_proofs.get(proof_id)
-        #     if proof.get('VerifiableEncryption'):
-        #         shorts_demo_ve_proof = proof.get('VerifiableEncryption')
+        demo = {
+            "credentials": {
+                "creditCard": {
+                    "issuer": {
+                        "name": "NeoVault",
+                        "domain": "flux@neovault.bank.example",
+                    },
+                    "credentialSubject": cc_cred_subject,
+                },
+                "rebatesCard": {
+                    "issuer": {
+                        "name": "SynergiPay Consortium",
+                        "domain": "rebates@synergipay.example",
+                    },
+                    "credentialSubject": rc_cred_subject,
+                },
+            }
+        }
 
-        # # decryption_key = issuer_private.get('verifiable_decryption_key')
-        # # decrypted_proof = self.decrypt_proof(ve_proof,decryption_key ).get('decrypted')
-        # # decrypted_proof
-
-        # demo = {
-        #     "credentials": {
-        #         "creditCard": {
-        #             "issuer": {
-        #                 "name": "NeoVault",
-        #                 "domain": "flux@neovault.bank.example",
-        #             },
-        #             "credentialSubject": cc_cred_subject,
-        #         },
-        #         "rebatesCard": {
-        #             "issuer": {
-        #                 "name": "SynergiPay Consortium",
-        #                 "domain": "rebates@synergipay.example",
-        #             },
-        #             "credentialSubject": rc_cred_subject,
-        #         },
-        #     }
-        # }
-
-        # await askar.store("demo", "default", demo)
-        # await askar.store("credential", "credit-card", cc_credential)
-        # await askar.store("credential", "rebates-card", rc_credential)
-        # await askar.store("presentation", "shoes-checkout", cc_presentation)
-        # await askar.store("presentation", "shorts-checkout", rc_presentation)
+        await askar.store("demo", "default", demo)
+        await askar.store("credential", "credit-card", cc_credential)
+        await askar.store("credential", "rebates-card", rc_credential)
+        await askar.store("presentation", "shoes-checkout", shoes_demo_presentation)
+        await askar.store("presentation", "shorts-checkout", shorts_demo_presentation)
 
     def create_cred_schema(self, schema):
         r = requests.post(

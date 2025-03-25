@@ -94,6 +94,7 @@ class ProofRequest(BaseModel):
 class SignatureQuery(BaseModel):
     type: str = Field("SignatureQuery")
     referenceId: str = Field(example="signature-request-for-some-credential")
+    revRefId: str = Field(None)
     disclosed: List[str] = Field([])
     # revocation: bool = Field(True)
     commitment: List[Commitment] = Field(None)
