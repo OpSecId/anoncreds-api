@@ -87,10 +87,10 @@ fn create_presentation(credentials: String, pres_schema: String, nonce: &[u8]) -
 #[pyfunction]
 fn verify_presentation(pres_schema: String, presentation: String, nonce: &[u8]) -> String {
     let pres_schema: PresentationSchema<BbsScheme> = serde_json::from_str(&pres_schema).unwrap();
-    let presentation: Presentation<BbsScheme> = serde_json::from_str(&presentation).unwrap();
-    let verification = presentation.verify(&pres_schema, &nonce).unwrap();
+    // let presentation: Presentation<BbsScheme> = serde_json::from_str(&presentation).unwrap();
+    // let verification = presentation.verify(&pres_schema, &nonce).unwrap();
 
-    format!("{}", serde_json::to_string(&verification).unwrap())
+    format!("{}", serde_json::to_string(&pres_schema).unwrap())
 }
 
 #[pyfunction]

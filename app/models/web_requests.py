@@ -94,10 +94,6 @@ class StoreCredentialRequest(BaseModel):
 
 
 class BlindCredentialRequest(BaseModel):
-    # linkSecret: str = Field(
-    #     None, example="5179bc1a7276e2d6dddca6915a57e7b8cd41326652f7760811d56de92a4fba86"
-    # )
-    subjectId: str = Field(example=settings.TEST_VALUES["subject_id"])
     verificationMethod: str = Field(settings.TEST_VALUES["verification_method"])
 
 

@@ -17,15 +17,10 @@ async def verify_presentation(request_body: VerifyPresentationRequest):
 
     presentation = request_body.get("presentation")
     options = request_body.get("options")
-
-    askar = AskarStorage()
-    pres_schema = await askar.fetch("resource", options.get("presReqId"))
-
-    anoncreds = AnonCredsV2()
+    pres_schema = await askar.fetch("presentationSchema", options.get("presSchemaId"))
     verification = anoncreds.verify_presentation(
         pres_schema, presentation, options.get("challenge")
     )
-
     return JSONResponse(
         status_code=200,
         content={

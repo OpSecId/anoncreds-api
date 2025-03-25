@@ -219,10 +219,10 @@ class AnonCredsV2:
         claim_indices.append("credentialId")
         claims.append(ClaimSchema(claim_type="Revocation", label="credentialId"))
 
-        if options.get("linkSecret"):
-            claim_indices.append("linkSecret")
-            blind_claims.append("linkSecret")
-            claims.append(ClaimSchema(claim_type="Scalar", label="linkSecret"))
+        # if options.get("linkSecret"):
+        #     claim_indices.append("linkSecret")
+        #     blind_claims.append("linkSecret")
+        #     claims.append(ClaimSchema(claim_type="Scalar", label="linkSecret"))
 
         properties = json_schema.get("properties")
         for property in properties:
@@ -472,6 +472,7 @@ class AnonCredsV2:
         #     'issuer': pres_req['statements'][sig_id]['Signature']['issuer'],
         #     'credential': credential
         # }
+        print(nonce)
         presentation = anoncreds_api.create_presentation(
             json.dumps(credentials),
             json.dumps(pres_req),
@@ -481,11 +482,13 @@ class AnonCredsV2:
         return presentation
 
     def verify_presentation(self, pres_schema, presentation, nonce):
+        print(nonce)
         try:
             verification = anoncreds_api.verify_presentation(
                 json.dumps(pres_schema), json.dumps(presentation), nonce.encode()
             )
             verification = self._sanitize_input(verification)
+            print(verification)
             return True
         except:
             return False
