@@ -18,6 +18,7 @@ class AnonCredsApi:
 
         with open("app/static/demo/holder.json", "r") as f:
             holder = json.loads(f.read())
+            
         holder_id = holder.get("subjectId")
         self.clear_wallet(holder_id)
 
@@ -38,14 +39,13 @@ class AnonCredsApi:
         cc_verification_method = cc_issuer.get("verificationMethod").get('id')
         
         cc_cred_subject = cc_demo.get("credential").get("credentialSubject")
-        # cc_request_proof = self.request_credential(
-        #     holder_id, cc_verification_method
-        # ).get("requestProof")
+        cc_request_proof = self.request_credential(
+            holder_id, cc_verification_method
+        ).get("requestProof")
         cc_credential = self.issue_credential(
             issuer_label=cc_demo.get('issuer').get('label'),
             cred_subject=cc_cred_subject,
-            request_proof=None,
-            # request_proof=cc_request_proof,
+            request_proof=cc_request_proof,
             verification_method=cc_verification_method,
         ).get('credential')
         self.store_credential(holder_id, cc_credential, cc_verification_method)
@@ -61,80 +61,73 @@ class AnonCredsApi:
         rc_verification_method = rc_issuer.get("verificationMethod").get('id')
         
         rc_cred_subject = rc_demo.get("credential").get("credentialSubject")
-        # rc_cred_subject["clientNo"] = zalgo_id(64)
-        # rc_request_proof = self.request_credential(
-        #     holder_id, rc_verification_method
-        # ).get("requestProof")
+        rc_cred_subject["clientNo"] = zalgo_id(64)
+        rc_request_proof = self.request_credential(
+            holder_id, rc_verification_method
+        ).get("requestProof")
         rc_credential = self.issue_credential(
             issuer_label=rc_demo.get('issuer').get('label'),
             cred_subject=rc_cred_subject,
-            request_proof=None,
-            # request_proof=rc_request_proof,
+            request_proof=rc_request_proof,
             verification_method=rc_verification_method,
         ).get('credential')
         self.store_credential(holder_id, rc_credential, rc_verification_method)
-        # print(self.list_credentials(holder_id))
 
         with open("app/static/demo/presentations/shoes-purchase.json", "r") as f:
             shoes_demo = json.loads(f.read())
             
         shoes_demo_query = shoes_demo.get("query")
         shoes_demo_query[0]['verificationMethod'] = cc_verification_method
-        # shoes_demo_query[0]['encryption'][0]['encryptionKey'] = cc_verification_method
-        # shoes_demo_query[1]['verificationMethod'] = rc_verification_method
+        shoes_demo_query[0]['encryption'][0]['encryptionKey'] = shoes_demo.get('verifier').get('encryptionKey')
+        shoes_demo_query[1]['verificationMethod'] = rc_verification_method
 
         shoes_pres_schema_id = self.create_pres_schema(shoes_demo_query).get('presentationSchemaId')
         
-        shoes_demo_challenge = 'challenge'
+        shoes_demo_challenge = str(uuid.uuid4())
         shoes_demo_presentation = self.create_presentation(
             holder_id, shoes_pres_schema_id, shoes_demo_challenge
         ).get("presentation")
-        # print(json.dumps(shoes_demo_presentation))
         
         shoes_demo_verified = self.verify_presentation(
             shoes_demo_presentation, shoes_pres_schema_id, shoes_demo_challenge
         )
         print(shoes_demo_verified)
 
-        # with open("app/static/demo/presentations/shorts-purchase.json", "r") as f:
-        #     shorts_demo = json.loads(f.read())
+        with open("app/static/demo/presentations/shorts-purchase.json", "r") as f:
+            shorts_demo = json.loads(f.read())
             
-        # shorts_demo_query = shorts_demo.get("query")
-        # shorts_demo_query[0]['verificationMethod'] = cc_verification_method
-        # # shoes_demo_query[0]['encryption'][0]['encryptionKey'] = cc_verification_method
-        # # shorts_demo_query[1]['verificationMethod'] = rc_verification_method
+        shorts_demo_query = shorts_demo.get("query")
+        shorts_demo_query[0]['verificationMethod'] = cc_verification_method
+        shorts_demo_query[0]['encryption'][0]['encryptionKey'] = shorts_demo.get('verifier').get('encryptionKey')
+        shorts_demo_query[1]['verificationMethod'] = rc_verification_method
 
-        # shorts_pres_schema_id = self.create_pres_schema(shorts_demo_query).get('presentationSchemaId')
+        shorts_pres_schema_id = self.create_pres_schema(shorts_demo_query).get('presentationSchemaId')
 
-        # rc_pres_statements = {
-        #     # 'signature': {
-        #     #     'disclosed': ['anniversaryMonth']
-        #     # },
-        #     "revocation": {"accumulator": ""},
-        #     "encryption": {
-        #         "claim": "clientNo",
-        #         "domain": cc_demo.get("issuer").get("domain"),
-        #         "encryptionKey": cc_cred_def.get("verifiable_encryption_key"),
-        #     },
-        # }
-        # challenge = self.create_nonce().get("nonce")
-        # rc_pres_schema = self.create_pres_schema(
-        #     rc_cred_def.get("id"), rc_pres_statements
-        # ).get("presReq")
-        # rc_presentation = self.create_presentation(
-        #     rc_credential, rc_pres_schema.get("id"), challenge
-        # ).get("presentation")
-        # rc_verified = self.verify_presentation(
-        #     rc_presentation, rc_pres_schema.get("id"), challenge
-        # )
-        # print(rc_cred_subject)
+        shorts_demo_challenge = str(uuid.uuid4())
+        shorts_demo_presentation = self.create_presentation(
+            holder_id, shorts_pres_schema_id, shorts_demo_challenge
+        ).get("presentation")
+        
+        shorts_demo_verified = self.verify_presentation(
+            shorts_demo_presentation, shorts_pres_schema_id, shorts_demo_challenge
+        )
+        
+        print(shorts_demo_verified)
 
-        # # # Decrypt Proof
-        # # proofs = presentation.get('proofs')
-        # # for proof_id in proofs:
-        # #     proof = proofs.get(proof_id)
-        # #     if proof.get('VerifiableEncryption'):
-        # #         ve_proof = proof.get('VerifiableEncryption')
+        # Decrypt Proof
+        shoes_demo_proofs = shoes_demo_presentation.get('proofs')
+        print(shoes_demo_proofs)
+        for proof_id in shoes_demo_proofs:
+            proof = shoes_demo_proofs.get(proof_id)
+            if proof.get('VerifiableEncryption'):
+                shoes_demo_ve_proof = proof.get('VerifiableEncryption')
+
+        # # Decrypt Proof
+        # shorts_demo_proofs = shorts_demo_presentation.get('proofs')
+        # for proof_id in shorts_demo_proofs:
+        #     proof = shorts_demo_proofs.get(proof_id)
+        #     if proof.get('VerifiableEncryption'):
+        #         shorts_demo_ve_proof = proof.get('VerifiableEncryption')
 
         # # decryption_key = issuer_private.get('verifiable_decryption_key')
         # # decrypted_proof = self.decrypt_proof(ve_proof,decryption_key ).get('decrypted')
@@ -168,7 +161,7 @@ class AnonCredsApi:
     def create_cred_schema(self, schema):
         r = requests.post(
             f"{self.endpoint}/schemas/credentials",
-            json={"jsonSchema": schema, "options": {'linkSecret': False}},
+            json={"jsonSchema": schema, "options": {}},
         )
         return r.json()
 

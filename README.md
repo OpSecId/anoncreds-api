@@ -27,7 +27,7 @@ To create a credential schema, we can use a json schema as input and add claim v
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8000/resources/schemas/credentials' \
+  'https://api.anoncreds.vc/schemas/credentials' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -50,7 +50,7 @@ Once the schema is created, a verification method can be generated for issuing t
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8000/resources/issuers/demo' \
+  'https://api.anoncreds.vc/issuers/{ISSUER_LABEL}/credentials' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -118,7 +118,7 @@ This is used for requesting `Equality` statements from defined `Signature` state
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8000/resources/schemas/presentations' \
+  'https://api.anoncreds.vc/schemas/presentations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -136,11 +136,10 @@ curl -X 'POST' \
 Holder derives a request proof from the `subjectId` value they want to bind this credential to. This value will not be revealed to the issuer but a hash (`Scalar`) will be signed. This is a blinded claim acting as the link secret.
 ```bash
 curl -X 'POST' \
-  'https://api.anoncreds.vc/operations/credentials/request' \
+  'https://api.anoncreds.vc/wallets/urn:uuid:76a55fec-98df-4f57-8005-62e4c887ecb7/requests' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "subjectId": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
   "verificationMethod": "..."
 }'
 ```
@@ -152,7 +151,7 @@ A `revocationId` can also be passed as the `Revocation` claim value and a `reque
 
 ```bash
 curl -X 'POST' \
-  'https://api.anoncreds.vc/operations/credentials/issuance' \
+  'https://api.anoncreds.vc/issuers/{ISSUER_LABEL}/credentials/{credentialDefinitionId}/issuee' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -173,12 +172,11 @@ An issued credential and a `subjectId` can be provided to unblind the credential
 
 ```bash
 curl -X 'POST' \
-  'https://api.anoncreds.vc/operations/credentials/storage' \
+  'https://api.anoncreds.vc/wallets/{HOLDER_ID}/credentials' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "credential": {},
-  "subjectId": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp"
+  "credential": {}
 }'
 ```
 
@@ -187,15 +185,12 @@ To create a holder, the `subjectId` linking the credentials as well as a `challe
 
 ```bash
 curl -X 'POST' \
-  'https://api.anoncreds.vc/operations/presentations/creation' \
+  'https://api.anoncreds.vc/wallets/{HOLDER_ID}/presentations' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "subjectId": "did:key:z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp",
-  "options": {
-      "challenge": "...",
-      "presSchemaId": "..."
-  }
+    "challenge": "...",
+    "presSchemaId": "..."
 }'
 ```
 
@@ -203,7 +198,7 @@ curl -X 'POST' \
 
 ```bash
 curl -X 'POST' \
-  'https://api.anoncreds.vc/operations/presentations/verification' \
+  'https://api.anoncreds.vc/verifiers/presentations/verify' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

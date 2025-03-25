@@ -149,7 +149,7 @@ class AnonCredsV2:
                         "message_generator": commitment.get("messageGenerator"),
                     }
                     statements.append(
-                        {"Commitment": statement | {"id": self._generate_id(statement)}}
+                        {"Commitment": statement | {"id": commitment.get("referenceId") or self._generate_id(statement)}}
                     )
                     if commitment.get("range"):
                         statement = {
@@ -160,7 +160,7 @@ class AnonCredsV2:
                             "lower": commitment.get("range").get("lower"),
                         }
                         statements.append(
-                            {"Range": statement | {"id": self._generate_id(statement)}}
+                            {"Range": statement | {"id": commitment.get("range").get("referenceId") or  self._generate_id(statement)}}
                         )
 
                 for encryption in query.get("encryption", []):
@@ -175,7 +175,7 @@ class AnonCredsV2:
                     statements.append(
                         {
                             "VerifiableEncryption": statement
-                            | {"id": self._generate_id(statement)}
+                            | {"id": encryption.get("referenceId") or self._generate_id(statement)}
                         }
                     )
         for query in queries:
@@ -205,7 +205,7 @@ class AnonCredsV2:
                 statements.append(
                     {
                         "Equality": {"ref_id_claim_index": statement}
-                        | {"id": self._generate_id(statement)}
+                        | {"id": query.get("referenceId") or self._generate_id(statement)}
                     }
                 )
 

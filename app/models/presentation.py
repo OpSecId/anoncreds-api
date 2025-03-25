@@ -29,6 +29,7 @@ class Range(BaseModel):
     # commitmentIndex: int = Field()
     # signatureIndex: int = Field(0)
     # claimRef: Union[str, int] = Field()
+    referenceId: str = Field(None)
     lower: int = Field(None)
     upper: int = Field(None)
 
@@ -36,6 +37,7 @@ class Range(BaseModel):
 class Commitment(BaseModel):
     # type: str =Field("Commitment")
     # signatureIndex: int = Field(0)
+    referenceId: str = Field(None)
     claimRef: str = Field(example="name")
     messageGenerator: str = Field(
         example="b24afdfc8024352057aa8f470804834925195dd8a1f7eada04697443ba53b2932be41ba53f9af0714b2eb33b3dc81e22"
@@ -49,6 +51,7 @@ class Commitment(BaseModel):
 class Encryption(BaseModel):
     # type: str =Field("Encryption")
     # signatureIndex: int = Field(0)
+    referenceId: str = Field(None)
     claimRef: str = Field(example="credentialId")
     domain: str = Field(example="example.com")
     encryptionKey: str = Field(None, example=settings.TEST_VALUES.get("encryption_key"))
@@ -65,6 +68,7 @@ class Membership(BaseModel):
 
 
 class EqualityClaim(BaseModel):
+    referenceId: str = Field(None)
     claimRef: str = Field(example="name")
     signatureRef: str = Field(example="signature-request-for-some-credential")
 
