@@ -20,36 +20,32 @@ from config import settings
 
 router = APIRouter(tags=["Operations"])
 
+askar = AskarStorage()
+anoncreds = AnonCredsV2()
 
 @router.post("/credentials/request")
 async def request_credential(request_body: BlindCredentialRequest):
     """"""
     request_body = request_body.model_dump()
 
-    subject_id = request_body.get("subjectId")
     cred_def_id = request_body.get("verificationMethod").split('#')[-1]
-
-    askar = AskarStorage()
-    cred_def = await askar.fetch("resource", cred_def_id)
+    cred_def = await askar.fetch("credentialDefinition", cred_def_id)
 
     if not cred_def:
         raise HTTPException(status_code=404, detail="No credential definition.")
 
-    anoncreds = AnonCredsV2()
-    link_secret = anoncreds.create_scalar(subject_id)
+    link_secret = anoncreds.create_scalar(request_body.get("subjectId"))
 
-    blind_claims = {"linkSecret": {"Scalar": {"value": link_secret}}}
     blind_claims, cred_request, blinder = anoncreds.credential_request(
-        cred_def, blind_claims
+        cred_def, {"linkSecret": {"Scalar": {"value": link_secret}}}
     )
 
     return JSONResponse(
         status_code=201,
         content={
-            # "link_secret": link_secret
+            "blinder": blinder,
             # "blindClaims": blind_claims,
             "requestProof": cred_request,
-            # "blinder": blinder,
         },
     )
 
@@ -65,10 +61,11 @@ async def issue_credential(request_body: IssueCredentialRequest):
     cred_id = options.get("credentialId") or str(uuid.uuid4())
     # rev_id = options.get("revocationId") or str(uuid.uuid4())
     cred_def_id = options.get("verificationMethod").split('#')[-1]
+    issuer_did = options.get("verificationMethod").split('#')[0]
     request_proof = options.get("requestProof")
 
-    issuer = await AskarStorage().fetch("secret", cred_def_id)
-    cred_def = await AskarStorage().fetch("resource", cred_def_id)
+    issuer = await askar.fetch("secret", cred_def_id)
+    cred_def = await askar.fetch("credentialDefinition", cred_def_id)
 
     if not cred_def or not issuer:
         raise HTTPException(status_code=404, detail="No issuer.")
@@ -81,38 +78,73 @@ async def issue_credential(request_body: IssueCredentialRequest):
         claims_map = {}
         for idx, claim in enumerate(claims_data):
             claims_map[claim_indices[idx]] = claim
-        signed_credential = issuer.issue_blind_credential(claims_map, request_proof)
+        credential = issuer.issue_blind_credential(claims_map, request_proof)
 
     else:
-        signed_credential = issuer.issue_credential(claims_data)
+        credential = issuer.issue_credential(claims_data)
+        
+    cred_def['issuer_did'] = issuer_did
+    # credential = issuer.cred_to_w3c(cred_def, credential)
+    # credential = issuer.w3c_to_cred(cred_def, credential)
 
-    return JSONResponse(status_code=201, content=signed_credential)
+    return JSONResponse(status_code=201, content={'credential': credential})
+    # return JSONResponse(status_code=201, content={'credential': credential})
 
 
-@router.post("/credentials/storage")
-async def store_credential(request_body: StoreCredentialRequest):
+# @router.post("/credentials/storage")
+# async def store_credential(request_body: StoreCredentialRequest):
+#     request_body = request_body.model_dump()
+#     credential = request_body.get('credential')
+#     options = request_body.get('options')
+#     subject_id = options.get('subjectId')
+#     verification_method = options.get('verificationMethod').split('#')[-1]
+#     askar = AskarStorage()
+#     cred_def = await askar.fetch("resource", verification_method)
+#     if not cred_def:
+#         raise HTTPException(status_code=404, detail="No credential definition.")
+    
+#     anoncreds = AnonCredsV2()
+#     if subject_id:
+#         blind_bundle = {"credential": credential, "issuer": cred_def}
+#         blind_claims = {"linkSecret": {"Scalar": {"value": anoncreds.create_scalar(subject_id)}}}
+#         credential = anoncreds.unblind_credential(
+#             blind_bundle, blind_claims, options.get("blinder")
+#         )
+    
+#     wallet = await askar.fetch("wallet", subject_id)
+#     if not wallet and wallet != []:
+#         wallet = []
+#         await askar.store("wallet", subject_id, wallet)
+        
+#     await askar.append("wallet", subject_id, credential)
+#     return JSONResponse(status_code=200, content={})
+
+
+@router.post("/wallets/{holder_id}/presentations")
+async def create_presentation(holder_id: str, request_body: CreatePresentationRequest):
     request_body = request_body.model_dump()
-    credential = request_body.get('credential')
-    if (
-        not credential.get('id') 
-        or not credential.get('credentialSubject')
-        or not credential.get('credentialSubject').get('id')
-    ):
-        raise HTTPException(status_code=400, detail="Invalid Credential.")
+    challenge = request_body.get("challenge")
+    pres_schema_id = request_body.get("presSchemaId")
 
+    wallet = await askar.fetch("wallet", holder_id)
+    if not wallet:
+        raise HTTPException(status_code=404, detail="No wallet found.")
+    
+    pres_req = await askar.fetch("presentationSchema", pres_schema_id)
+    credentials = {}
+    for statement_id, statement in pres_req.get('statements').items():
+        if statement.get('Signature'):
+            cred_match = next(
+                (
+                    cred for cred in wallet 
+                    if cred.get('verificationMethod') == statement.get('Signature').get('issuer').get('id')
+                ), None
+            )
+            credentials[statement.get('Signature').get('id')] = {
+                'Signature': cred_match
+            }
 
-@router.post("/presentations/creation")
-async def create_presentation(request_body: CreatePresentationRequest):
-    request_body = request_body.model_dump()
-    credential = request_body.get("credential")
-    options = request_body.get("options")
-    challenge = options.get("challenge")
-
-    askar = AskarStorage()
-    pres_req = await askar.fetch("resource", options.get("presSchemaId"))
-
-    anoncreds = AnonCredsV2()
-    presentation = anoncreds.create_presentation(pres_req, credential, challenge)
+    presentation = anoncreds.create_presentation(pres_req, credentials, challenge)
 
     return JSONResponse(status_code=201, content={"presentation": presentation})
 

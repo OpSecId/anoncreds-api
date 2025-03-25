@@ -3,25 +3,22 @@ use pyo3::PyResult;
 use blsful::inner_types::*;
 use blsful::*;
 use std::collections::BTreeMap;
-use rand::{thread_rng, RngCore};
-use indexmap::{indexmap, IndexMap};
-// use maplit::{btreemap, btreeset};
+use rand::thread_rng;
+use indexmap::IndexMap;
+// use ::credx::indexmap::IndexMap
 use ::credx::blind::{BlindCredentialBundle, BlindCredentialRequest};
-use ::credx::claim::{Claim, ClaimData, ClaimType, HashedClaim, RevocationClaim};
-// use ::credx::claim::{ClaimType, ClaimValidator, HashedClaim, RevocationClaim, NumberClaim, ScalarClaim};
+use ::credx::claim::{Claim, ClaimData, HashedClaim};
 use ::credx::{
-    create_domain_proof_generator, generate_verifiable_encryption_keys, random_string
+    create_domain_proof_generator, generate_verifiable_encryption_keys
 };
 use ::credx::prelude::{PresentationCredential, MembershipRegistry, MembershipSigningKey, MembershipVerificationKey};
-use ::credx::credential::{Credential, CredentialSchema, ClaimSchema};
-use ::credx::presentation::{Presentation, PresentationSchema, PresentationProofs, VerifiableEncryptionProof};
-use ::credx::statement::{Statements, VerifiableEncryptionStatement, RevocationStatement, SignatureStatement};
+use ::credx::credential::CredentialSchema;
+use ::credx::presentation::{Presentation, PresentationSchema, VerifiableEncryptionProof};
+use ::credx::statement::Statements;
 use ::credx::knox::bbs::BbsScheme;
 use ::credx::issuer::{IssuerPublic, Issuer};
-mod demo;
-use demo::check_domain_commitment;
-
-use maplit::btreeset;
+// mod demo;
+// use demo::check_domain_commitment;
 
 #[pyfunction]
 fn new_cred_schema(cred_schema: String) -> String {
@@ -79,13 +76,10 @@ fn issue_blind_credential(issuer_private: String, claims_data: String, cred_requ
 }
 
 #[pyfunction]
-fn create_presentation(credential: String, pres_schema: String, sig_id: String, nonce: &[u8]) -> String {
-
-    let sig_id: String = serde_json::from_str(&sig_id).unwrap();
-    let credential: Credential<BbsScheme> = serde_json::from_str(&credential).unwrap();
+fn create_presentation(credentials: String, pres_schema: String, nonce: &[u8]) -> String {
     let pres_schema: PresentationSchema<BbsScheme> = serde_json::from_str(&pres_schema).unwrap();
-    let credentials: IndexMap<String, PresentationCredential<BbsScheme>> = indexmap! { sig_id => credential.into() };
-    let presentation = Presentation::create(&credentials, &pres_schema, &nonce).unwrap();
+    let credentials: IndexMap<String, PresentationCredential<BbsScheme>> = serde_json::from_str(&credentials).unwrap();
+    let presentation: Presentation<BbsScheme> = Presentation::create(&credentials, &pres_schema, &nonce).unwrap();
 
     format!("{}", serde_json::to_string(&presentation).unwrap())
 }
@@ -211,7 +205,7 @@ fn anoncreds_api(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(derive_scalar, m)?)?;
     m.add_function(wrap_pyfunction!(membership_registry, m)?)?;
     m.add_function(wrap_pyfunction!(create_commitment, m)?)?;
-    m.add_function(wrap_pyfunction!(check_domain_commitment, m)?)?;
+    // m.add_function(wrap_pyfunction!(check_domain_commitment, m)?)?;
     m.add_function(wrap_pyfunction!(reveal_blind_credential, m)?)?;
     m.add_function(wrap_pyfunction!(create_key_scalar, m)?)?;
 

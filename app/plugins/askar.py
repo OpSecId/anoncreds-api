@@ -54,3 +54,15 @@ class AskarStorage:
                 await session.replace(category, data_key, json.dumps(data))
         except Exception:
             raise HTTPException(status_code=404, detail="Couldn't update record.")
+
+    async def append(self, category, data_key, data):
+        """Append data in the store."""
+        store = await self.open()
+        try:
+            async with store.session() as session:
+                data_array = await session.fetch(category, data_key)
+                data_array = json.loads(data_array.value)
+                data_array.append(data)
+                await session.replace(category, data_key, json.dumps(data_array))
+        except Exception:
+            raise HTTPException(status_code=404, detail="Couldn't update record.")

@@ -6,6 +6,7 @@ from app.models.schema import CredentialSchema
 from app.utils import (
     digest_multibase,
     multibase_encode,
+    multibase_decode,
     public_key_multibase,
     to_encoded_cbor,
     from_encoded_cbor,
@@ -64,65 +65,59 @@ class AnonCredsV2:
             if value
             else anoncreds_api.create_scalar()
         )
-        scalar = self._sanitize_input(scalar)
-        return scalar
+        return self._sanitize_input(scalar)
 
     def create_keypair(self):
         encryption_key, decryption_key = anoncreds_api.new_keys()
-        encryption_key, decryption_key = self._sanitize_input(
-            encryption_key
-        ), self._sanitize_input(decryption_key)
-        return encryption_key, decryption_key
+        return (
+            self._sanitize_input(encryption_key), 
+            self._sanitize_input(decryption_key)
+        )
 
     def membership_registry(self):
         signing_key, verification_key, registry = anoncreds_api.membership_registry()
-        signing_key, verification_key, registry = (
+        return (
             self._sanitize_input(signing_key),
             self._sanitize_input(verification_key),
             self._sanitize_input(registry),
         )
-        return signing_key, verification_key, registry
 
     def message_generator(self, domain=None):
-        if domain:
-            generator = anoncreds_api.domain_proof_generator(domain.encode())
-        else:
-            generator = anoncreds_api.msg_generator()
-        generator = self._sanitize_input(generator)
-        return generator
+        generator = (
+            anoncreds_api.domain_proof_generator(domain.encode()) 
+            if domain else anoncreds_api.msg_generator()
+        )
+        return self._sanitize_input(generator)
 
     def map_claims(self, cred_def, credential_subject, cred_id):
-        schema = cred_def.get("schema")
-        claims = schema.get("claims")
         claims_data = []
-        for claim in claims:
+        for claim in cred_def.get("schema").get("claims"):
+            
+            claim_label = claim.get("label")
+            claim_value = credential_subject.get(claim_label)
+            
             if claim.get("claim_type") == "Revocation":
                 claims_data.append({"Revocation": {"value": cred_id}})
-            elif claim.get("label") in credential_subject:
-                value = credential_subject[claim.get("label")]
-                if isinstance(value, str):
-                    claims_data.append(
-                        {
-                            "Hashed": {
-                                "value": value,
-                                "print_friendly": claim.get("print_friendly"),
-                            }
+                
+            elif isinstance(claim_value, str) and isinstance(claim_value, int):
+                continue
+            
+            elif credential_subject.get(claim_label):
+                claims_data.append(
+                    {
+                        "Hashed" if isinstance(claim_value, str) else "Number": {
+                            "value": claim_value,
+                            "print_friendly": claim.get("print_friendly"),
                         }
-                    )
-                elif isinstance(value, int) or isinstance(value, float):
-                    claims_data.append(
-                        {
-                            "Number": {
-                                "value": value,
-                                "print_friendly": claim.get("print_friendly"),
-                            }
-                        }
-                    )
+                    }
+                )
+                
         return claims_data
 
     def map_pres_schema(self, queries, challenge):
         statements = []
         for query in queries:
+            
             if query.get("type") == "SignatureQuery":
                 issuer = query.get("issuer")
                 cred_schema = issuer.get("schema")
@@ -324,51 +319,120 @@ class AnonCredsV2:
 
     def cred_to_w3c(self, issuer, credential_input):
         schema = issuer.get("schema")
-        verifying_key = public_key_multibase(
-            issuer.get("verifying_key").get("w"), "bls"
-        )
         schema_endpoint = "https://" + settings.DOMAIN + "/" + issuer.get("id")
         credential = {
             "@context": [
                 "https://www.w3.org/ns/credentials/v2",
                 "https://www.w3.org/ns/credentials/examples/v2",
             ],
-            "type": ["VerifiableCredential", schema.get("label").replace(" ", "")],
-            "name": schema.get("label"),
-            "description": schema.get("description"),
-            "issuer": {"id": f"did:key:{verifying_key}"},
-            "credentialSchema": {"type": "AnonCredsDefinition", "id": schema_endpoint},
-            "credentialStatus": {
-                "credentialId": credential_input.get("claims")[0]["Revocation"][
-                    "value"
-                ],
-                "revocationIndex": credential_input.get("revocation_index"),
-                "revocationHandle": credential_input.get("revocation_handle"),
-                "revocationRegistry": issuer.get("revocation_registry"),
-            },
+            "type": "VerifiableCredential",
+            # "name": schema.get("label"),
+            # "description": schema.get("description"),
+            "issuer": issuer.get('issuer_did'),
+            # "issuer": {"id": issuer.get('issuer_did')},
+            # "credentialSchema": [{"type": "AnonCredsDefinition", "id": schema_endpoint}],
+            # "credentialStatus": [],
             "credentialSubject": {},
             "proof": {
                 "type": "DataIntegrityProof",
                 "cryptosuite": "anoncreds-bbs-2025",
                 "proofPurpose": "assertionMethod",
                 "proofValue": multibase_encode(credential_input.get("signature")),
-                "verificationMethod": f"did:key:{verifying_key}#{verifying_key}",
+                "verificationMethod": issuer.get('issuer_did') + "#" + issuer.get("id"),
             },
         }
-        for idx, claim in enumerate(credential_input.get("claims")):
-            if claim.get("Revocation"):
-                continue
-            elif claim.get("Scalar"):
-                continue
-            elif claim.get("Number"):
-                credential["credentialSubject"][schema["claim_indices"][idx]] = (
-                    claim.get("Number").get("value")
-                )
-            elif claim.get("Hashed"):
-                credential["credentialSubject"][schema["claim_indices"][idx]] = (
-                    claim.get("Hashed").get("value")
-                )
+        
+        # credential
+        if credential_input.get('revocation_index'):
+            rev_id = credential_input['claims'][0]['Revocation']['value']
+            rev_idx = 0
+        # blind bundle
+        elif credential_input.get('revocation_label'):
+            rev_label = credential_input.get('revocation_label')
+            rev_id = credential_input['claims'][rev_label]['Revocation']['value']
+            rev_idx = issuer['schema']['claim_indices'].index(rev_label)
+        
+        # credential['id'] = f'urn:uuid:{rev_id}'
+        credential['credentialStatus'] = {
+            "type": "RevocationClaim",
+            "revocationId": rev_id,
+            "revocationIndex": rev_idx,
+            "revocationHandle": credential_input.get("revocation_handle")
+        }
+        
+        # credential
+        if credential_input.get('revocation_index'):
+            for idx, claim in enumerate(credential_input.get("claims")):
+                claim_label = schema["claim_indices"][idx]
+                if claim.get("Revocation"):
+                    continue
+                elif claim.get("Scalar"):
+                    continue
+                elif claim.get("Number"):
+                    credential["credentialSubject"][claim_label] = (
+                        claim.get("Number").get("value")
+                    )
+                elif claim.get("Hashed"):
+                    credential["credentialSubject"][claim_label] = (
+                        claim.get("Hashed").get("value")
+                    )
+        # blind bundle
+        elif credential_input.get('revocation_label'):
+            for idx, claim_label in enumerate(issuer.get('schema').get('claim_indices')):
+                claim = credential_input.get('claims').get(claim_label)
+                if not claim:
+                    continue
+                elif claim.get("Revocation"):
+                    continue
+                elif claim.get("Scalar"):
+                    continue
+                elif claim.get("Number"):
+                    credential["credentialSubject"][claim_label] = (
+                        claim.get("Number").get("value")
+                    )
+                elif claim.get("Hashed"):
+                    credential["credentialSubject"][claim_label] = (
+                        claim.get("Hashed").get("value")
+                    )
         return credential
+
+    def w3c_to_cred(self, cred_def, credential):
+        subject = credential.get('credentialSubject')
+        status = credential.get('credentialStatus')
+        signature = credential.get('proof').get('proofValue')
+        
+        claim_indices = cred_def.get('schema').get('claim_indices')
+        # blind_claims = {
+        #     'linkSecret': {
+        #         'Scalar': {
+        #             'value': self.create_scalar(subject.pop('id'))
+        #         }
+        #     }
+        # }
+        claims = {
+            claim_indices[0]: {
+                'Revocation': {
+                    'value': status.get('revocationId')
+                }
+            }
+        }
+        for key, value in subject.items():
+            if not isinstance(value, str) and not isinstance(value, int):
+                continue
+            claims[key] = {
+                'Hashed' if isinstance(value, str) else 'Number': {
+                    'value': value
+                }
+            }
+        cred_bundle = {
+            'claims': claims,
+            'signature': multibase_decode(signature),
+            'revocation_handle': status.get('revocationHandle'),
+            'revocation_label': claim_indices[0],
+            'issuer': cred_def
+        }
+        # credential = self.unblind_credential(cred_bundle, blind_claims, settings.BBS_BLINDER)
+        return cred_bundle
 
     def issue_credential(self, claims_data):
         response = anoncreds_api.issue_credential(
@@ -392,16 +456,14 @@ class AnonCredsV2:
         # credential = self.cred_to_w3c(response.get('issuer'), credential)
         return credential
 
-    def create_presentation(self, pres_req, credential, nonce):
-        sig_id = self._get_sig_id(pres_req)
+    def create_presentation(self, pres_req, credentials, nonce):
         # credential = {
         #     'issuer': pres_req['statements'][sig_id]['Signature']['issuer'],
         #     'credential': credential
         # }
         presentation = anoncreds_api.create_presentation(
-            json.dumps(credential),
+            json.dumps(credentials),
             json.dumps(pres_req),
-            json.dumps(sig_id),
             nonce.encode(),
         )
         presentation = self._sanitize_input(presentation)
@@ -430,9 +492,18 @@ class AnonCredsV2:
         )
         return self._sanitize_input(commitment)
 
-    def unblind_credential(self, credential, cred_def, blinder=None):
-        credential = anoncreds_api.reveal_blind_credential(
-            json.dumps(credential), json.dumps(cred_def), json.dumps(blinder)
+    def unblind_credential(self, blinder, blind_bundle, blind_claims):
+        blind_bundle = anoncreds_api.reveal_blind_credential(
+            json.dumps(blind_bundle), json.dumps(blind_claims), json.dumps(blinder)
         )
-        credential = self._sanitize_input(credential)
-        return credential.get("credential")
+        return self._sanitize_input(blind_bundle).get("credential")
+
+    def create_blind_claim(self, value):
+        scalar = anoncreds_api.derive_scalar(json.dumps(value))
+        return {
+            'linkSecret': {
+                'Scalar': {
+                    'value': self._sanitize_input(scalar)
+                }
+            }
+        }

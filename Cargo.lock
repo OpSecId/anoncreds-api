@@ -90,6 +90,8 @@ dependencies = [
  "pyo3",
  "rand",
  "rand_core",
+ "serde",
+ "serde_derive",
  "serde_json",
  "uuid",
 ]
@@ -668,6 +670,7 @@ checksum = "3954d50fe15b02142bf25d3b8bdadb634ec3948f103d04ffe3031bc8fe9d7058"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.2",
+ "serde",
 ]
 
 [[package]]

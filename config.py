@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     DOMAIN: str = os.getenv("DOMAIN", "api.anoncreds.vc")
     ASKAR_DB: str = os.getenv("ASKAR_DB", "sqlite://app.db")
+    
+    BBS_BLINDER: str = '0000000000000000000000000000000000000000000000000000000000000000'
 
     TEST_VALUES: dict = {
         "cred_id": "zQmb5W91ceoJoRD6DaDLfrRJLkm7H78EaTHCSJkHdHW8Kyh",

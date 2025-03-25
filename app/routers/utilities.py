@@ -139,7 +139,7 @@ async def reveal_blinded_credential(request_body: UnblindCredentialRequest):
     options = request_body.get("options")
 
     askar = AskarStorage()
-    cred_def = await askar.fetch("resource", options.get("verificationMethod"))
+    cred_def = await askar.fetch("resource", options.get("verificationMethod").split('#')[-1])
     if not cred_def:
         raise HTTPException(status_code=404, detail="No credential definition.")
 

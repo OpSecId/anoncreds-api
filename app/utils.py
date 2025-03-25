@@ -1,5 +1,6 @@
 from multiformats import multibase, multihash
 import jcs
+import json
 from cbor2 import dumps, loads, load
 from app.plugins.askar import AskarStorage
 
@@ -14,6 +15,9 @@ def digest_multibase(value):
 
 def multibase_encode(value):
     return multibase.encode(jcs.canonicalize(value), "base58btc")
+
+def multibase_decode(value):
+    return json.loads(multibase.decode(value))
 
 
 def public_key_multibase(key_hex, key_type):

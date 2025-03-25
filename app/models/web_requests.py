@@ -77,18 +77,17 @@ class IssueCredentialRequest(BaseModel):
     options: IssueCredentialOptions = Field()
 
 
-# class StoreCredentialOptions(BaseModel):
-#     subjectId: str = Field(None)
-#     credentialId: str = Field(None)
-#     verificationMethod: str = Field(
-#         example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP"
-#     )
+class StoreCredentialOptions(BaseModel):
+    blinder: str = Field('0000000000000000000000000000000000000000000000000000000000000000')
+    verificationMethod: str = Field(
+        example="zQmUPUAsvuLh1xAmNvHy8pF2oEbksi6vuob6KWJPBsYWMxP"
+    )
 
 class StoreCredentialRequest(BaseModel):
     """StoreCredentialRequest model."""
 
     credential: dict= Field()
-    # options: IssueCredentialOptions = Field()
+    options: StoreCredentialOptions = Field()
 
 
 class BlindCredentialRequest(BaseModel):
@@ -140,16 +139,17 @@ class VerifyPresentationRequest(BaseModel):
 
 class CreatePresentationOption(BaseModel):
     """CreatePresentationOption model."""
-
     challenge: str = Field(None)
     presSchemaId: str = Field()
+
 
 
 class CreatePresentationRequest(BaseModel):
     """CreatePresentationRequest model."""
 
-    credential: dict = Field()
-    options: CreatePresentationOption = Field()
+    # options: CreatePresentationOption = Field()
+    challenge: str = Field(None)
+    presSchemaId: str = Field()
 
 
 class CredentialsIssueOptions(BaseModel):
@@ -174,7 +174,7 @@ class CreateCommitmentRequest(BaseModel):
 
 
 class UnblindCredentialOptions(BaseModel):
-    blinder: str = Field(None)
+    blinder: str = Field('0000000000000000000000000000000000000000000000000000000000000000')
     linkSecret: str = Field()
     verificationMethod: str = Field()
 
