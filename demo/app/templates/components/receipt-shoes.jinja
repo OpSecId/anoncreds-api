@@ -1,10 +1,10 @@
 <div class="bg-body-tertiary p-6 rounded-4">
     <div class="row g-4 align-items-center">
-        <div class="col-lg">
+        <div class="col-4">
             <h3 class="h2">StrideHub</h3>
             <p class="m-0 text-secondary">Presentation Receipt</p>
         </div>
-        <div class="col-lg">
+        <div class="col-8">
             <ul class="list-unstyled m-0">
                 {% for proof_id in session['presentations']['shoes-checkout']['proofs'] %}
                 {% if session['presentations']['shoes-checkout']['proofs'][proof_id].get('Signature') %}
@@ -15,9 +15,10 @@
                         class="icon icon-inline me-1 text-green icon-3">
                         <path d="M5 12l5 5l10 -10"></path>
                     </svg>
-                    Verified (Signature)
+                    Verified - (Signature)
                 </li>
                 {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('VerifiableEncryption') %}
+                    {% if proof_id == 'cc-number-encryption' %}
                 <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -25,8 +26,9 @@
                         class="icon icon-inline me-1 text-green icon-3">
                         <path d="M5 12l5 5l10 -10"></path>
                     </svg>
-                    Transaction Approved (Encryption)
+                    Transaction Approved - (Encryption)
                 </li>
+                    {% elif proof_id == 'rebates-clientNo-encryption' %}
                 <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -34,17 +36,9 @@
                         class="icon icon-inline me-1 text-green icon-3">
                         <path d="M5 12l5 5l10 -10"></path>
                     </svg>
-                    Account Found (Encryption)
+                    Account Found - (Encryption)
                 </li>
-                <li>
-                    <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="icon icon-inline me-1 text-green icon-3">
-                        <path d="M5 12l5 5l10 -10"></path>
-                    </svg>
-                    Trusted Holder (Equality)
-                </li>
+                    {% endif %}
                 {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('Revocation') %}
                 <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
@@ -53,8 +47,10 @@
                         class="icon icon-inline me-1 text-green icon-3">
                         <path d="M5 12l5 5l10 -10"></path>
                     </svg>
-                    Valid (Revocation)
+                    Valid - (Revocation)
                 </li>
+                {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('Range') %}
+                    {% if proof_id == 'rebates-register-range' %}
                 <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -63,8 +59,9 @@
                         <path d="M18 6l-12 12"></path>
                         <path d="M6 6l12 12"></path>
                     </svg>
-                    Anniversary Promo (Membership)
+                    Legacy Rebates - (Range)
                 </li>
+                    {% elif proof_id == 'rebates-number-encryption' %}
                 <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -73,18 +70,19 @@
                         <path d="M18 6l-12 12"></path>
                         <path d="M6 6l12 12"></path>
                     </svg>
-                    Legacy Rebates (Range)
+                    Anniversary Promo - (Membership)
                 </li>
+                    {% endif %}
                 {% elif session['presentations']['shoes-checkout']['proofs'][proof_id].get('Equality') %}
-                {# <li>
+                <li>
                     <!-- Download SVG icon from http://tabler.io/icons/icon/check -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="icon icon-inline me-1 text-green icon-3">
                         <path d="M5 12l5 5l10 -10"></path>
                     </svg>
-                    Equality Verified
-                </li> #}
+                    Trusted Holder - (Equality)
+                </li>
                 {% endif %}
                 {% endfor %}
             </ul>

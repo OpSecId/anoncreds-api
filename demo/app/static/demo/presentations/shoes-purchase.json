@@ -43,7 +43,7 @@
                     "messageGenerator": "b3ba5ab96913f6da4a488f3d025c2816e22e77000f334e112f20c21e7cb029db7dc4a8a33be0b9715053d94dba8cfd87",
                     "blinderGenerator": "8f4e246f9add77f2e91924ba8d01385163aa50b6ae07f194864093f679d866f979fe6b7af4e9b0cd6a7511fbaaba4450",
                     "range": {
-                        "referenceId": "rebates-expiry-range",
+                        "referenceId": "rebates-register-range",
                         "upper": 20240324
                     }
                 }

@@ -44,6 +44,23 @@ def create_app(config_class=Config):
             "pages/index.jinja", title=session["title"], demo=session["demo"]
         )
 
+    @app.route("/claims")
+    def list_claims():
+        credential_label = request.args.get("credential")
+        credential = _await(AskarStorage().fetch("credential", credential_label))
+        if credential:
+            session["credentials"][credential_label] = credential
+        return redirect(url_for("index"))
+
+    @app.route("/statements")
+    def list_statments():
+        credential_label = request.args.get("credential")
+        credential = _await(AskarStorage().fetch("credential", credential_label))
+        if credential:
+            session["credentials"][credential_label] = credential
+        return redirect(url_for("index"))
+
+
     @app.route("/credential")
     def get_credential():
         credential_label = request.args.get("credential")

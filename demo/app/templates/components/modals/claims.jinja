@@ -1,0 +1,108 @@
+<div class="modal modal-lg modal-blur fade" id="modal-claims" tabindex="-1" style="display: none;"
+    aria-hidden="true">
+    <div class="modal-dialog modal-1 modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="hr-text hr-text-center hr-text-spaceless mt-5 mb-5">Claim Types</div>
+                <div class="card-body">
+
+                    {# <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Enumeration</div>
+                                <div class="text-secondary">Defines a fixed set of values where the claim value is one
+                                    of them.
+                                </div>
+                            </div>
+                        </div>
+                    </a> #}
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Number</div>
+                                <div class="text-secondary">A claim is a 64-bit integer like numbers, dates, and times.
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Hashed</div>
+                                <div class="text-secondary">The claim is an arbitrary length value that will be hashed
+                                    like strings,
+                                    images, and biometrics.</div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Scalar</div>
+                                <div class="text-secondary">The claim is already a cryptographic value and should be
+                                    taken as is
+                                    like a secret key.</div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Revocation</div>
+                                <div class="text-secondary">The claim is meant to indicate revocation status of the
+                                    claim.</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="hr-text hr-text-center hr-text-spaceless mt-5 mb-5">Validators</div>
+                <div class="card-body">
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Length</div>
+                                <div class="text-secondary">Checks the claim's length is correct.</div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Range</div>
+                                <div class="text-secondary">Checks if the claim value is between the correct range.
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">Regex</div>
+                                <div class="text-secondary">Check if the claim data matches a regular expression.</div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a class="card-link" href="#">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div class="font-weight-medium">AnyOne</div>
+                                <div class="text-secondary">Check if a claim value matches any value in the list.</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
